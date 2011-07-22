@@ -1,0 +1,14 @@
+--- Module/rtmp_def.h	2008-05-06 09:26:44.000000000 +0400
++++ Module/rtmp_def.h	2011-03-22 14:33:44.000000000 +0300
+@@ -858,6 +858,11 @@
+  {USB_DEVICE(0x0b05,0x1724)}, /* ASUS */	\
+  {USB_DEVICE(0x050d,0x705a)}, /* Belkin */  \
+  {USB_DEVICE(0x07d1,0x3c03)}, /* D-Link */  \
++ {USB_DEVICE(0x07d1,0x3c04)}, /* D-Link */  \
++ {USB_DEVICE(0x07d1,0x3c06)}, /* D-Link */  \
++ {USB_DEVICE(0x07d1,0x3c07)}, /* D-Link */  \
++ {USB_DEVICE(0x07d1,0x3c09)}, /* D-Link */  \
++ {USB_DEVICE(0x07d1,0x3c11)}, /* D-Link */  \
+  {USB_DEVICE(0x13b1,0x0023)}, /* Linksys */  \
+  {USB_DEVICE(0x13b1,0x0020)}, /* Linksys WUS54GC */ \
+  {}} /* end marker */

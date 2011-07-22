@@ -1,0 +1,14 @@
+--- git/data/skin_default/spinner/Makefile.old	2011-04-13 20:07:40.000000000 +0300
++++ git/data/skin_default/spinner/Makefile.am	2011-04-13 20:10:00.000000000 +0300
+@@ -4,4 +4,10 @@
+ 	wait1.png \
+ 	wait2.png \
+ 	wait3.png \
+-	wait4.png
++	wait4.png \
++	wait5.png \
++	wait6.png \
++	wait7.png \
++	wait8.png \
++	wait9.png \
++	wait10.png 

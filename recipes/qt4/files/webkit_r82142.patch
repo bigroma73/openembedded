@@ -1,0 +1,13 @@
+Upstream: http://trac.webkit.org/changeset/82142/trunk/Source/WebKit/qt/WebCoreSupport/ChromeClientQt.cpp
+
+Index: trunk/Source/WebKit/qt/WebCoreSupport/ChromeClientQt.cpp
+===================================================================
+--- a/src/3rdparty/webkit/WebKit/qt/WebCoreSupport/ChromeClientQt.cpp	(revision 80716)
++++ b/src/3rdparty/webkit/WebKit/qt/WebCoreSupport/ChromeClientQt.cpp	(revision 82142)
+@@ -412,5 +412,5 @@
+             platformPageClient()->update(rect);
+     }
+-    emit m_webPage->repaintRequested(windowRect);
++    QMetaObject::invokeMethod(m_webPage, "repaintRequested", Qt::QueuedConnection, Q_ARG(QRect, windowRect));
+ 
+     // FIXME: There is no "immediate" support for window painting.  This should be done always whenever the flag

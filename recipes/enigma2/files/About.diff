@@ -1,0 +1,11 @@
+--- a/lib/python/Screens/About.py	2010-05-27 18:36:38.000000000 +0400
++++ b/lib/python/Screens/About.py	2011-03-19 16:08:51.000000000 +0300
+@@ -12,7 +12,7 @@
+ 		Screen.__init__(self, session)
+ 
+ 		self["EnigmaVersion"] = StaticText("Enigma: " + about.getEnigmaVersionString())
+-		self["ImageVersion"] = StaticText("Image: " + about.getImageVersionString())
++		self["ImageVersion"] = StaticText("Domica-Image: 9.0")
+ 
+ 		self["TunerHeader"] = StaticText(_("Detected NIMs:"))
+ 

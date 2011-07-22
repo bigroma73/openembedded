@@ -1,0 +1,178 @@
+diff -Naur 3/data/setup.xml 4/data/setup.xml
+--- 3/data/setup.xml	2011-06-04 18:22:43.000000000 +0300
++++ 4/data/setup.xml	2011-06-10 21:59:09.000000000 +0300
+@@ -42,6 +42,7 @@
+ 			<item level="2" text="Show infobar on channel change">config.usage.show_infobar_on_zap</item>
+ 			<item level="2" text="Show infobar on skip forward/backward">config.usage.show_infobar_on_skip</item>
+ 			<item level="2" text="Show infobar on event change">config.usage.show_infobar_on_event_change</item>
++			<item level="2" text="Read now/next from EIT">config.usage.show_eit_nownext</item>
+ 			<item level="2" text="Behavior when a movie is started">config.usage.on_movie_start</item>
+ 			<item level="2" text="Behavior when a movie is stopped">config.usage.on_movie_stop</item>
+ 			<item level="2" text="Behavior when a movie reaches the end">config.usage.on_movie_eof</item>
+diff -Naur 3/lib/dvb/dvbtime.h 4/lib/dvb/dvbtime.h
+--- 3/lib/dvb/dvbtime.h	2011-04-05 14:15:09.000000000 +0300
++++ 4/lib/dvb/dvbtime.h	2011-06-11 00:31:18.000000000 +0300
+@@ -82,6 +82,7 @@
+ 	bool getUseDVBTime() { return m_use_dvb_time; }
+ 	void setUseDVBTime(bool b);
+ 	PSignal0<void> m_timeUpdated;
++	time_t nowTime() const { return m_time_ready ? ::time(0)+m_time_difference : -1; }
+ 	bool ready() const { return m_time_ready; }
+ 	static eDVBLocalTimeHandler *getInstance() { return instance; }
+ };
+diff -Naur 3/lib/dvb/epgcache.cpp 4/lib/dvb/epgcache.cpp
+--- 3/lib/dvb/epgcache.cpp	2011-06-11 01:16:13.000000000 +0300
++++ 4/lib/dvb/epgcache.cpp	2011-06-20 22:47:10.000000000 +0300
+@@ -552,6 +552,10 @@
+ 			eit_event->start_time_5,
+ 			&event_hash);
+ 
++		if ( source == NOWNEXT && onid == 1714 )
++			if(TM + duration < now || TM > now || duration == (24*3600-1))
++				goto next;
++
+ 		if ( TM == 3599 )
+ 			goto next;
+ 
+diff -Naur 3/lib/python/Components/UsageConfig.py 4/lib/python/Components/UsageConfig.py
+--- 3/lib/python/Components/UsageConfig.py	2011-06-04 18:22:43.000000000 +0300
++++ 4/lib/python/Components/UsageConfig.py	2011-06-10 22:03:50.000000000 +0300
+@@ -20,6 +20,7 @@
+ 	config.usage.show_infobar_on_zap = ConfigYesNo(default = True)
+ 	config.usage.show_infobar_on_skip = ConfigYesNo(default = True)
+ 	config.usage.show_infobar_on_event_change = ConfigYesNo(default = True)
++	config.usage.show_eit_nownext = ConfigYesNo(default = True)
+ 	config.usage.hdd_standby = ConfigSelection(default = "600", choices = [
+ 		("0", _("no standby")), ("10", "10 " + _("seconds")), ("30", "30 " + _("seconds")),
+ 		("60", "1 " + _("minute")), ("120", "2 " + _("minutes")),
+diff -Naur 3/lib/service/servicedvb.cpp 4/lib/service/servicedvb.cpp
+--- 3/lib/service/servicedvb.cpp	2011-04-05 14:15:09.000000000 +0300
++++ 4/lib/service/servicedvb.cpp	2011-06-11 00:07:49.000000000 +0300
+@@ -914,7 +914,7 @@
+ }
+ 
+ eDVBServicePlay::eDVBServicePlay(const eServiceReference &ref, eDVBService *service):
+-	m_reference(ref), m_dvb_service(service), m_have_video_pid(0), m_is_paused(0)
++	m_reference(ref), m_dvb_service(service), m_have_video_pid(0), m_is_paused(0), m_nownext_timer(eTimer::create(eApp))
+ {
+ 	m_is_primary = 1;
+ 	m_is_pvr = !m_reference.path.empty();
+@@ -936,6 +936,7 @@
+ 	m_subtitle_sync_timer = eTimer::create(eApp);
+ 
+ 	CONNECT(m_subtitle_sync_timer->timeout, eDVBServicePlay::checkSubtitleTiming);
++	CONNECT(m_nownext_timer->timeout, eDVBServicePlay::updateEpgCacheNowNext);
+ }
+ 
+ eDVBServicePlay::~eDVBServicePlay()
+@@ -979,9 +980,48 @@
+ 	if (m_event_next)
+ 		eDebug("next running: %s (%d seconds :)", m_event_next->m_event_name.c_str(), m_event_next->m_duration);
+ #endif
+-	m_event((iPlayableService*)this, evUpdatedEventInfo);
++	updateEpgCacheNowNext();
+ }
+ 
++void eDVBServicePlay::updateEpgCacheNowNext()
++{
++	bool update = false;
++	ePtr<eServiceEvent> next = 0;
++	ePtr<eServiceEvent> ptr = 0;
++	eServiceReferenceDVB &ref = (eServiceReferenceDVB&) m_reference;
++	if (eEPGCache::getInstance() && eEPGCache::getInstance()->lookupEventTime(ref, -1, ptr) >= 0)
++	{
++		ePtr<eServiceEvent> current = 0;
++		m_event_handler.getEvent(current, 0);
++		if (!current || !ptr || current->getEventId() != ptr->getEventId())
++		{
++			update = true;
++			m_event_handler.inject(ptr, 0);
++			time_t next_time = ptr->getBeginTime() + ptr->getDuration();
++			if (eEPGCache::getInstance()->lookupEventTime(ref, next_time, ptr) >= 0)
++			{
++				next = ptr;
++				m_event_handler.inject(ptr, 1);
++			}
++		}
++	}
++
++	int refreshtime = 60;
++	if (!next)
++	{
++		m_event_handler.getEvent(next, 1);
++	}
++	if (next)
++	{
++		time_t now = eDVBLocalTimeHandler::getInstance()->nowTime();
++		refreshtime = (int)(next->getBeginTime() - now) + 3;
++		if (refreshtime <= 0 || refreshtime > 60) refreshtime = 60;
++	}
++	m_nownext_timer->startLongTimer(refreshtime);
++	if (update) m_event((iPlayableService*)this, evUpdatedEventInfo);
++}
++
++
+ void eDVBServicePlay::serviceEvent(int event)
+ {
+ 	m_tune_state = event;
+@@ -990,18 +1030,28 @@
+ 	{
+ 	case eDVBServicePMTHandler::eventTuned:
+ 	{
+-		ePtr<iDVBDemux> m_demux;
+-		if (!m_service_handler.getDataDemux(m_demux))
++		/* fill now/next with info from the epg cache, will be replaced by EIT when it arrives */
++		updateEpgCacheNowNext();
++
++		std::string show_eit_nownext;
++		/* default behaviour is to start an eit reader, and wait for now/next info, unless this is disabled */
++		if (ePythonConfigQuery::getConfigValue("config.usage.show_eit_nownext", show_eit_nownext) < 0
++			|| show_eit_nownext != "False")
+ 		{
+-			eServiceReferenceDVB &ref = (eServiceReferenceDVB&) m_reference;
+-			int sid = ref.getParentServiceID().get();
+-			if (!sid)
+-				sid = ref.getServiceID().get();
+-			if ( ref.getParentTransportStreamID().get() &&
+-				ref.getParentTransportStreamID() != ref.getTransportStreamID() )
+-				m_event_handler.startOther(m_demux, sid);
+-			else
+-				m_event_handler.start(m_demux, sid);
++			ePtr<iDVBDemux> m_demux;
++			if (!m_service_handler.getDataDemux(m_demux))
++			{
++				eServiceReferenceDVB &ref = (eServiceReferenceDVB&) m_reference;
++				int sid = ref.getParentServiceID().get();
++				if (!sid)
++					sid = ref.getServiceID().get();
++
++				if ( ref.getParentTransportStreamID().get() &&
++					ref.getParentTransportStreamID() != ref.getTransportStreamID() )
++					m_event_handler.startOther(m_demux, sid);
++				else
++					m_event_handler.start(m_demux, sid);
++			}
+ 		}
+ 		m_event((iPlayableService*)this, evTunedIn);
+ 		break;
+@@ -1221,6 +1271,7 @@
+ 		if (!::stat(m_reference.path.c_str(), &s))
+ 			saveCuesheet();
+ 	}
++	m_nownext_timer->stop();
+ 	m_event((iPlayableService*)this, evStopped);
+ 	return 0;
+ }
+diff -Naur 3/lib/service/servicedvb.h 4/lib/service/servicedvb.h
+--- 3/lib/service/servicedvb.h	2011-04-05 14:15:09.000000000 +0300
++++ 4/lib/service/servicedvb.h	2011-06-10 23:13:24.000000000 +0300
+@@ -282,6 +282,9 @@
+ 	ePtr<eTimer> m_subtitle_sync_timer;
+ 	void checkSubtitleTiming();
+ 
++	ePtr<eTimer> m_nownext_timer;
++	void updateEpgCacheNowNext();
++
+ 		/* radiotext */
+ 	ePtr<eDVBRdsDecoder> m_rds_decoder;
+ 	ePtr<eConnection> m_rds_decoder_event_connection;

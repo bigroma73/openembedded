@@ -1,0 +1,90 @@
+diff -Nur 2/data/keymap.xml 1/data/keymap.xml
+--- 2/data/keymap.xml	2011-04-05 14:15:09.000000000 +0300
++++ 1/data/keymap.xml	2011-02-08 15:46:33.000000000 +0200
+@@ -95,7 +95,14 @@
+ 	</map>
+ 
+ 	<map context="InfobarExtensions">
+-		<key id="KEY_BLUE" mapto="extensions" flags="b" />
++# ------------------ Menu Domica Patch ----------------
++		<key id="KEY_PREVIOUSSONG" mapto="red" flags="m" />
++		<key id="KEY_BLUE" mapto="green" flags="l" />
++		<key id="KEY_PLAYPAUSE" mapto="yellow" flags="m" />
++		<key id="KEY_BLUE" mapto="blue" flags="b" />
++# ------------------ Menu Domica Patch ----------------
++<key id="KEY_GREEN" mapto="extensions" flags="b" />
++		
+ 	</map>
+ 	
+ 	<map context="SatlistShortcutAction">
+diff -Nur 2/data/menu.xml 1/data/menu.xml
+--- 2/data/menu.xml	2011-04-05 14:15:09.000000000 +0300
++++ 1/data/menu.xml	2010-12-24 23:01:41.000000000 +0200
+@@ -19,22 +19,13 @@
+ 		<!--<item text="Radio"><code>print "radio mode"</code></item>-->
+ 		<item level="0" text="Timer" entryID="timer_edit"><screen module="TimerEdit" screen="TimerEditList" /></item>
+ 		<item level="1" text="VCR scart" entryID="scart_switch" requires="ScartSwitch"><code>self.session.scart.VCRSbChanged(3)</code></item>
+-
++                				
+ 		<menu level="0" text="Information" entryID="info_screen">
+ 			<id val="information" />
+ 			<item level="1" text="Service" entryID="service_info_screen"><screen module="ServiceInfo" screen="ServiceInfo"/></item>
+ 			<item level="0" text="About" entryID="about_screen"><screen module="About" /></item>
+ 		</menu>
+-
+-		<item level="1" text="Plugins" entryID="plugin_selection"><screen module="PluginBrowser" screen="PluginBrowser" /></item>
+-		<menu level="0" text="Setup" flushConfigOnClose="1" entryID="setup_selection" >
+-			<id val="setup" />
+-			<!--<menu text="Service Organising">
+-				<item text="New Bouquets"></item>
+-				<item text="Add to Bouquets"></item>
+-				<item text="Edit Bouquets"></item>
+-			</menu>-->
+-			<menu weight="0" level="0" text="Service Searching" entryID="service_searching_selection">
++                <menu weight="52" level="52" text="Service Searching" entryID="service_searching_selection">
+ 				<id val="scan" />
+ 				<item text="Tuner configuration" entryID="tuner_setup"><screen module="Satconfig" screen="NimSelection" /></item>
+ 				<item text="Default services lists" entryID="default_lists"><screen module="ScanSetup" screen="DefaultSatLists" /></item>
+@@ -45,7 +36,7 @@
+ 				<item text="Edit Transponder"></item>
+ 				<item text="Satfinder"></item>-->
+ 			</menu>
+-			<menu weight="5" level="0" text="System" entryID="system_selection">
++			<menu weight="51" level="51" text="System" entryID="system_selection">
+ 				<id val="system" />
+ 				<item level="0" text="Language" entryID="language_setup"><screen module="LanguageSelection" /></item>
+ 				<item level="0" entryID="usage_setup"><setup id="usage" /></item>
+@@ -64,14 +55,22 @@
+ 				<item level="0" text="Network" entryID="network_setup"><screen module="NetworkSetup" screen="NetworkAdapterSelection" /></item>
+ 				<item level="1" text="Input devices" entryID="input_device_setup"><screen module="InputDeviceSetup" screen="InputDeviceSelection" /></item>
+ 				<item requires="Display"><setup level="1" id="lcd" /></item>
+-				<item text="Keyboard"><setup id="keyboard" /></item>
++				<item text="Keyboard" entryID="keyboard"><setup id="keyboard" /></item>
+ 				<!--<menu level="1" text="Network..." entryID="network_setup">
+ 					<id val="network" />
+ 					<item level="1" text="Device Setup..." entryID="device_setup"><screen module="NetworkSetup" screen="NetworkAdapterSelection"/></item>
+ 					<item level="1" text="Nameserver Setup..." entryID="dns_setup"><screen module="NetworkSetup" screen="NameserverSetup"/></item>
+ 				</menu>-->
+-				<item level="2" text="Recording paths" entryId="RecordPaths"><screen module="RecordPaths" screen="RecordPathsSettings" /></item>
++				<item level="2" text="Recording paths" entryID="RecordPaths"><screen module="RecordPaths" screen="RecordPathsSettings" /></item>
+ 			</menu>
++		<item level="1" text="Plugins" entryID="plugin_selection"><screen module="PluginBrowser" screen="PluginBrowser" /></item>
++		<menu level="0" text="Setup" flushConfigOnClose="1" entryID="setup_selection" >
++			<id val="setup" />
++			<!--<menu text="Service Organising">
++				<item text="New Bouquets"></item>
++				<item text="Add to Bouquets"></item>
++				<item text="Edit Bouquets"></item>
++			</menu>-->
+ 			<item weight="10" level="1" text="Common Interface" entryID="ci_setup" requires="CommonInterface"><screen module="Ci" screen="CiSelection" /></item>
+ 			<item weight="15" level="0" text="Parental control" entryID="parental_setup"><screen module="ParentalControlSetup" screen="ParentalControlSetup" /></item>
+ 			<!--item level="0" text="Startwizard" entryID="startwizzard"><screen module="StartWizard" screen="StartWizard" /></item-->
+@@ -91,7 +90,7 @@
+ 			<!--<item text="Expert -disabled-"><setup id="expert" /></item>-->
+ 		</menu>
+ 		<!--<item text="Unser Setup">self.openSetup("Blaselfasel")</item>-->
+-		<menu text="Standby / Restart" entryID="standby_restart_list">
++		<menu weight="65" level="65" text="Standby / Restart" entryID="standby_restart_list">
+ 			<id val="shutdown" />
+ 			<!--<item text="Standby"><code>quitMainloop(0)</code></item>-->
+ 			<item text="Sleep Timer" entryID="sleep"><screen module="SleepTimerEdit" screen="SleepTimerEdit" /></item>

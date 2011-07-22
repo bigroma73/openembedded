@@ -1,0 +1,482 @@
+--- a/lib/python/Screens/InfoBarGenerics.py	2011-03-19 16:08:51.000000000 +0300
++++ b/lib/python/Screens/InfoBarGenerics.py	2010-12-27 23:47:42.000000000 +0300
+@@ -300,7 +300,21 @@
+ 				"historyBack": (self.historyBack, _("previous channel in history")),
+ 				"historyNext": (self.historyNext, _("next channel in history")),
+ 				"openServiceList": (self.openServiceList, _("open servicelist")),
++				"volumeUp": (self.volumeUp, _("Volume")),
++				"volumeDown": (self.volumeDown, _("Volume")),
+ 			})
++			
++	def volumeUp(self):
++		from GlobalActions import globalActionMap
++		global globalActionMap
++		globactmap = globalActionMap
++		globactmap.actions["volumeUp"]()
++
++	def volumeDown(self):
++		from GlobalActions import globalActionMap
++		global globalActionMap
++		globactmap = globalActionMap
++		globactmap.actions["volumeDown"]()
+ 
+ 	def showTvChannelList(self, zap=False):
+ 		self.servicelist.setModeTv()
+@@ -1295,8 +1295,38 @@
+ 		self["InstantExtensionsActions"] = HelpableActionMap(self, "InfobarExtensions",
+ 			{
+ 				"extensions": (self.showExtensionSelection, _("view extensions...")),
+-			}, 1) # lower priority
++				
++				# ------------------ Menu Domica Patch ----------------
++				"red": (self.callDomicaRed, _("view Domica Red ...")),
++				"green": (self.callDomicaGreen, _("view Domica Green ...")),
++				"yellow": (self.callDomicaYellow, _("view Domica Yellow ...")),
++				"blue": (self.callDomicaBlue, _("view Domica Blue ...")),
++			})
++	def callDomicaRed(self):
++                from Plugins.Extensions.Domica.plugin import DomicaButton, Domica
++                DomicaButton(self,"red")
++		self.session.open(Domica)
++                DomicaButton(self,"")
++
++	def callDomicaGreen(self):
++                from Plugins.Extensions.Domica.plugin import DomicaButton, Domica
++	        DomicaButton(self,"green")
++		self.session.open(Domica)
++                DomicaButton(self,"")
++
++	def callDomicaYellow(self):
++                from Plugins.Extensions.Domica.plugin import DomicaButton, Domica
++	        DomicaButton(self,"yellow")
++		self.session.open(Domica)
++                DomicaButton(self,"")
++
++	def callDomicaBlue(self):
++                from Plugins.Extensions.Domica.plugin import DomicaButton, Domica
++	        DomicaButton(self,"blue")
++		self.session.open(Domica)
++                DomicaButton(self,"")
+ 
++# ------------------ Menu Domica Patch ----------------
+ 	def addExtension(self, extension, key = None, type = EXTENSION_SINGLE):
+ 		self.list.append((type, extension, key))
+ 
+--- a/lib/python/Screens/ServiceInfo.py	2011-03-19 16:08:51.000000000 +0300
++++ b/lib/python/Screens/ServiceInfo.py	2010-05-27 18:45:24.000000000 +0400
+@@ -43,7 +43,7 @@
+ 		self.l = eListboxPythonMultiContent()
+ 		self.list = source
+ 		self.l.setList(self.list)
+-		self.l.setFont(0, gFont("Regular", 23))
++		self.l.setFont(0, gFont("Regular", 21))
+ 		self.l.setItemHeight(25)
+ 
+ 	GUI_WIDGET = eListbox
+--- a/lib/python/Components/RecordingConfig.py	2011-02-17 14:15:10.000000000 +0300
++++ b/lib/python/Components/RecordingConfig.py	2010-05-27 18:50:48.000000000 +0400
+@@ -4,8 +4,8 @@
+ 	config.recording = ConfigSubsection();
+ 	# actually this is "recordings always have priority". "Yes" does mean: don't ask. The RecordTimer will ask when value is 0.
+ 	config.recording.asktozap = ConfigYesNo(default=True)
+-	config.recording.margin_before = ConfigNumber(default=0)
+-	config.recording.margin_after = ConfigNumber(default=0)
++	config.recording.margin_before = ConfigNumber(default=2)
++	config.recording.margin_after = ConfigNumber(default=10)
+ 	config.recording.debug = ConfigYesNo(default = False)
+ 	config.recording.ascii_filenames = ConfigYesNo(default = False)
+ 	config.recording.filename_composition = ConfigSelection(default = "standard", choices = [
+--- a/lib/python/Components/UsageConfig.py	2011-02-17 14:15:10.000000000 +0300
++++ b/lib/python/Components/UsageConfig.py	2010-12-27 23:17:42.000000000 +0300
+@@ -7,8 +7,8 @@
+ 
+ def InitUsageConfig():
+ 	config.usage = ConfigSubsection();
+-	config.usage.showdish = ConfigYesNo(default = True)
+-	config.usage.multibouquet = ConfigYesNo(default = False)
++	config.usage.showdish = ConfigYesNo(default = False)
++	config.usage.multibouquet = ConfigYesNo(default = True)
+ 	config.usage.multiepg_ask_bouquet = ConfigYesNo(default = False)
+ 
+ 	config.usage.quickzap_bouquet_change = ConfigYesNo(default = False)
+@@ -44,7 +44,7 @@
+ 	config.usage.on_movie_eof = ConfigSelection(default = "ask", choices = [
+ 		("ask", _("Ask user")), ("movielist", _("Return to movie list")), ("quit", _("Return to previous service")), ("pause", _("Pause movie at end")) ])
+ 
+-	config.usage.setup_level = ConfigSelection(default = "intermediate", choices = [
++	config.usage.setup_level = ConfigSelection(default = "expert", choices = [
+ 		("simple", _("Simple")),
+ 		("intermediate", _("Intermediate")),
+ 		("expert", _("Expert")) ])
+@@ -68,7 +68,7 @@
+ 		("4", "DVB-T/-C/-S"),
+ 		("5", "DVB-T/-S/-C") ])
+ 
+-	config.usage.show_event_progress_in_servicelist = ConfigYesNo(default = False)
++	config.usage.show_event_progress_in_servicelist = ConfigYesNo(default = True)
+ 
+ 	config.usage.blinking_display_clock_during_recording = ConfigYesNo(default = False)
+ 
+--- a/lib/python/Components/Renderer/Picon.py	2011-02-17 14:15:10.000000000 +0300
++++ b/lib/python/Components/Renderer/Picon.py	2011-03-02 23:05:49.000000000 +0300
+@@ -8,6 +8,8 @@
+ class Picon(Renderer):
+ 	searchPaths = (eEnv.resolve('${datadir}/enigma2/%s/'),
+ 				'/media/cf/%s/',
++				'/media/hdd/%s/', 
++				 '/autofs/sda1/%s/', 
+ 				'/media/usb/%s/')
+ 
+ 	def __init__(self):
+--- a/lib/python/Components/Converter/ClockToText.py	2011-02-17 14:15:10.000000000 +0300
++++ b/lib/python/Components/Converter/ClockToText.py	2011-03-02 23:05:48.000000000 +0300
+@@ -2,6 +2,48 @@
+ from time import localtime, strftime
+ from Components.Element import cached
+ 
++MONTHS = (_("January"),
++          _("February"),
++          _("March"),
++          _("April"),
++          _("May"),
++          _("June"),
++          _("July"),
++          _("August"),
++          _("September"),
++          _("October"),
++          _("November"),
++          _("December"))
++          
++shortMONTHS = (_("Jan"),
++               _("Feb"),
++               _("Mar"),
++               _("Apr"),
++               _("May"),
++               _("Jun"),
++               _("Jul"),
++               _("Aug"),
++               _("Sep"),
++               _("Oct"),
++               _("Nov"),
++               _("Dec"))
++          
++DAYWEEK = (_("Monday"),
++           _("Tuesday"),
++           _("Wednesday"),
++           _("Thursday"),
++           _("Friday"),
++           _("Saturday"),
++           _("Sunday"))
++           
++shortDAYWEEK = (_("Mon"),
++                _("Tue"),
++                _("Wed"),
++                _("Thu"),
++                _("Fri"),
++                _("Sat"),
++                _("Sun"))
++
+ class ClockToText(Converter, object):
+ 	DEFAULT = 0
+ 	WITH_SECONDS = 1
+@@ -51,11 +93,16 @@
+ 		if self.type == self.WITH_SECONDS:
+ 			return "%2d:%02d:%02d" % (t.tm_hour, t.tm_min, t.tm_sec)
+ 		elif self.type == self.DEFAULT:
+-			return "%02d:%02d" % (t.tm_hour, t.tm_min)
++			return "%2d:%02d" % (t.tm_hour, t.tm_min)
+ 		elif self.type == self.DATE:
+-			return strftime("%A %B %d, %Y", t)
++			return _(strftime("%A",t)) + " " + str(t[2]) + " " + MONTHS[t[1]-1] + " " + str(t[0])  
++			#return strftime("%A %B %d, %Y", t)
+ 		elif self.type == self.FORMAT:
+ 			spos = self.fmt_string.find('%')
++			self.fmt_string = self.fmt_string.replace('%A',_(DAYWEEK[t.tm_wday]))
++		        self.fmt_string = self.fmt_string.replace('%B',_(MONTHS[t.tm_mon-1]))
++		        self.fmt_string = self.fmt_string.replace('%a',_(shortDAYWEEK[t.tm_wday]))
++		        self.fmt_string = self.fmt_string.replace('%b',_(shortMONTHS[t.tm_mon-1]))
+ 			if spos > 0:
+ 				s1 = self.fmt_string[:spos]
+ 				s2 = strftime(self.fmt_string[spos:], t)
+--- a/lib/python/Components/Converter/EventName.py	2011-02-17 14:15:10.000000000 +0300
++++ b/lib/python/Components/Converter/EventName.py	2010-01-23 20:06:00.000000000 +0300
+@@ -25,12 +25,21 @@
+ 			return ""
+ 			
+ 		if self.type == self.NAME:
+-			return event.getEventName()
++			ret_str = event.getEventName()
+ 		elif self.type == self.SHORT_DESCRIPTION:
+-			return event.getShortDescription()
++			ret_str = event.getShortDescription()
+ 		elif self.type == self.EXTENDED_DESCRIPTION:
+-			return event.getExtendedDescription()
++			short_desc = event.getShortDescription()
++			exten_desc = event.getExtendedDescription()
++			if short_desc == "":
++				ret_str = exten_desc
++			elif exten_desc == "":
++				ret_str = short_desc
++			else:
++				ret_str = short_desc +"\n\n"+ exten_desc
+ 		elif self.type == self.ID:
+-			return str(event.getEventId())
+-		
++			ret_str = str(event.getEventId())
++
++		return ret_str
++
+ 	text = property(getText)
+--- a/skin.py	2011-02-17 14:15:11.000000000 +0300
++++ b/skin.py	2010-12-27 23:10:30.000000000 +0300
+@@ -50,7 +50,7 @@
+ 
+ # example: loadSkin("nemesis_greenline/skin.xml")
+ config.skin = ConfigSubsection()
+-config.skin.primary_skin = ConfigText(default = "skin.xml")
++config.skin.primary_skin = ConfigText(default = "hd-line_tvpro/Super/skin.xml")
+ 
+ profile("LoadSkin")
+ try:
+--- a/lib/python/Plugins/SystemPlugins/SoftwareManager/SoftwareTools.py	2011-02-17 14:15:10.000000000 +0300
++++ b/lib/python/Plugins/SystemPlugins/SoftwareManager/SoftwareTools.py	2011-02-08 17:01:51.000000000 +0300
+@@ -13,49 +13,6 @@
+ from time import time
+ from os import urandom
+ 
+-rootkey = ['\x9f', '|', '\xe4', 'G', '\xc9', '\xb4', '\xf4', '#', '&', '\xce', '\xb3', '\xfe', '\xda', '\xc9', 'U', '`', '\xd8', '\x8c', 's', 'o', '\x90', '\x9b', '\\', 'b', '\xc0', '\x89', '\xd1', '\x8c', '\x9e', 'J', 'T', '\xc5', 'X', '\xa1', '\xb8', '\x13', '5', 'E', '\x02', '\xc9', '\xb2', '\xe6', 't', '\x89', '\xde', '\xcd', '\x9d', '\x11', '\xdd', '\xc7', '\xf4', '\xe4', '\xe4', '\xbc', '\xdb', '\x9c', '\xea', '}', '\xad', '\xda', 't', 'r', '\x9b', '\xdc', '\xbc', '\x18', '3', '\xe7', '\xaf', '|', '\xae', '\x0c', '\xe3', '\xb5', '\x84', '\x8d', '\r', '\x8d', '\x9d', '2', '\xd0', '\xce', '\xd5', 'q', '\t', '\x84', 'c', '\xa8', ')', '\x99', '\xdc', '<', '"', 'x', '\xe8', '\x87', '\x8f', '\x02', ';', 'S', 'm', '\xd5', '\xf0', '\xa3', '_', '\xb7', 'T', '\t', '\xde', '\xa7', '\xf1', '\xc9', '\xae', '\x8a', '\xd7', '\xd2', '\xcf', '\xb2', '.', '\x13', '\xfb', '\xac', 'j', '\xdf', '\xb1', '\x1d', ':', '?']
+-
+-def bin2long(s):
+-	return reduce( lambda x,y:(x<<8L)+y, map(ord, s))
+-
+-def long2bin(l):
+-	res = ""
+-	for byte in range(128):
+-		res += chr((l >> (1024 - (byte + 1) * 8)) & 0xff)
+-	return res
+-
+-def rsa_pub1024(src, mod):
+-	return long2bin(pow(bin2long(src), 65537, bin2long(mod)))
+-	
+-def decrypt_block(src, mod):
+-	if len(src) != 128 and len(src) != 202:
+-		return None
+-	dest = rsa_pub1024(src[:128], mod)
+-	hash = hashlib.sha1(dest[1:107])
+-	if len(src) == 202:
+-		hash.update(src[131:192])	
+-	result = hash.digest()
+-	if result == dest[107:127]:
+-		return dest
+-	return None
+-
+-def validate_cert(cert, key):
+-	buf = decrypt_block(cert[8:], key) 
+-	if buf is None:
+-		return None
+-	return buf[36:107] + cert[139:196]
+-
+-def read_random():
+-	try:
+-		xor = lambda a,b: ''.join(chr(ord(c)^ord(d)) for c,d in zip(a,b*100))
+-		random = urandom(8)
+-		x = str(time())[-8:]
+-		result = xor(random, x)
+-				
+-		return result
+-	except:
+-		return None
+-
+ class SoftwareTools(DreamInfoHandler):
+ 	lastDownloadDate = None
+ 	NetworkConnectionAvailable = None
+@@ -101,26 +61,6 @@
+ 
+ 	def getUpdates(self, callback = None):
+ 		if self.lastDownloadDate is None:
+-			if  self.hardware_info.device_name != "dm7025":
+-				etpm = eTPM()
+-				l2cert = etpm.getCert(eTPM.TPMD_DT_LEVEL2_CERT)
+-				if l2cert is None:
+-					return
+-				l2key = validate_cert(l2cert, rootkey)
+-				if l2key is None:
+-					return
+-				l3cert = etpm.getCert(eTPM.TPMD_DT_LEVEL3_CERT)
+-				if l3cert is None:
+-					return
+-				l3key = validate_cert(l3cert, l2key)
+-				if l3key is None:
+-					return
+-				rnd = read_random()
+-				if rnd is None:
+-					return
+-				val = etpm.challenge(rnd)
+-				result = decrypt_block(val, l3key)
+-			if self.hardware_info.device_name == "dm7025" or result[80:88] == rnd:
+ 				if self.NetworkConnectionAvailable == True:
+ 					self.lastDownloadDate = time()
+ 					if self.list_updating is False and callback is None:
+@@ -137,14 +77,7 @@
+ 					if callback is not None:
+ 						callback(False)
+ 					elif self.NotifierCallback is not None:
+-						self.NotifierCallback(False)
+-			else:
+-				self.NetworkConnectionAvailable = False
+-				self.list_updating = False
+-				if callback is not None:
+-					callback(False)
+-				elif self.NotifierCallback is not None:
+-					self.NotifierCallback(False)		
++						self.NotifierCallback(False)	
+ 		else:
+ 			if self.NetworkConnectionAvailable == True:
+ 				self.lastDownloadDate = time()
+@@ -159,26 +92,6 @@
+ 					self.NotifierCallback = callback
+ 			else:
+ 				if self.list_updating and callback is not None:
+-					if  self.hardware_info.device_name != "dm7025":
+-						etpm = eTPM()
+-						l2cert = etpm.getCert(eTPM.TPMD_DT_LEVEL2_CERT)
+-						if l2cert is None:
+-							return
+-						l2key = validate_cert(l2cert, rootkey)
+-						if l2key is None:
+-							return
+-						l3cert = etpm.getCert(eTPM.TPMD_DT_LEVEL3_CERT)
+-						if l3cert is None:
+-							return
+-						l3key = validate_cert(l3cert, l2key)
+-						if l3key is None:
+-							return
+-						rnd = read_random()
+-						if rnd is None:
+-							return
+-						val = etpm.challenge(rnd)
+-						result = decrypt_block(val, l3key)
+-					if self.hardware_info.device_name == "dm7025" or result[80:88] == rnd:
+ 						self.NotifierCallback = callback
+ 						self.startIpkgListAvailable()
+ 				else:	
+--- a/lib/python/Plugins/SystemPlugins/WirelessLan/plugin.py	2011-02-17 14:15:10.000000000 +0300
++++ b/lib/python/Plugins/SystemPlugins/WirelessLan/plugin.py	2011-03-19 21:38:15.000000000 +0300
+@@ -374,48 +374,6 @@
+ 			self.buildWlanList()
+ 		return self.WlanList
+ 
+-
+-def bin2long(s):
+-	return reduce( lambda x,y:(x<<8L)+y, map(ord, s))
+-
+-def long2bin(l):
+-	res = ""
+-	for byte in range(128):
+-		res += chr((l >> (1024 - (byte + 1) * 8)) & 0xff)
+-	return res
+-
+-def rsa_pub1024(src, mod):
+-	return long2bin(pow(bin2long(src), 65537, bin2long(mod)))
+-	
+-def decrypt_block(src, mod):
+-	if len(src) != 128 and len(src) != 202:
+-		return None
+-	dest = rsa_pub1024(src[:128], mod)
+-	hash = hashlib.sha1(dest[1:107])
+-	if len(src) == 202:
+-		hash.update(src[131:192])	
+-	result = hash.digest()
+-	if result == dest[107:127]:
+-		return dest
+-	return None
+-
+-def validate_certificate(cert, key):
+-	buf = decrypt_block(cert[8:], key) 
+-	if buf is None:
+-		return None
+-	return buf[36:107] + cert[139:196]
+-
+-def get_random():
+-	try:
+-		xor = lambda a,b: ''.join(chr(ord(c)^ord(d)) for c,d in zip(a,b*100))
+-		random = urandom(8)
+-		x = str(time())[-8:]
+-		result = xor(random, x)
+-				
+-		return result
+-	except:
+-		return None
+-
+ def WlanStatusScreenMain(session, iface):
+ 	session.open(WlanStatus, iface)
+
+@@ -438,35 +388,7 @@
+ 		return None
+ 	return None
+ 
+ def configStrings(iface):
+-	try:
+-		device = open("/proc/stb/info/model", "r").readline().strip()
+-	except:
+-		device = ""	
+-	if device != "dm7025":
+-		rootkey = ['\x9f', '|', '\xe4', 'G', '\xc9', '\xb4', '\xf4', '#', '&', '\xce', '\xb3', '\xfe', '\xda', '\xc9', 'U', '`', '\xd8', '\x8c', 's', 'o', '\x90', '\x9b', '\\', 'b', '\xc0', '\x89', '\xd1', '\x8c', '\x9e', 'J', 'T', '\xc5', 'X', '\xa1', '\xb8', '\x13', '5', 'E', '\x02', '\xc9', '\xb2', '\xe6', 't', '\x89', '\xde', '\xcd', '\x9d', '\x11', '\xdd', '\xc7', '\xf4', '\xe4', '\xe4', '\xbc', '\xdb', '\x9c', '\xea', '}', '\xad', '\xda', 't', 'r', '\x9b', '\xdc', '\xbc', '\x18', '3', '\xe7', '\xaf', '|', '\xae', '\x0c', '\xe3', '\xb5', '\x84', '\x8d', '\r', '\x8d', '\x9d', '2', '\xd0', '\xce', '\xd5', 'q', '\t', '\x84', 'c', '\xa8', ')', '\x99', '\xdc', '<', '"', 'x', '\xe8', '\x87', '\x8f', '\x02', ';', 'S', 'm', '\xd5', '\xf0', '\xa3', '_', '\xb7', 'T', '\t', '\xde', '\xa7', '\xf1', '\xc9', '\xae', '\x8a', '\xd7', '\xd2', '\xcf', '\xb2', '.', '\x13', '\xfb', '\xac', 'j', '\xdf', '\xb1', '\x1d', ':', '?']
+-		etpm = eTPM()
+-		l2cert = etpm.getCert(eTPM.TPMD_DT_LEVEL2_CERT)
+-		if l2cert is None:
+-			return
+-		l2key = validate_certificate(l2cert, rootkey)
+-		if l2key is None:
+-			return
+-		l3cert = etpm.getCert(eTPM.TPMD_DT_LEVEL3_CERT)
+-		if l3cert is None:
+-			return
+-		l3key = validate_certificate(l3cert, l2key)
+-		if l3key is None:
+-			return
+-		rnd = get_random()
+-		if rnd is None:
+-			return
+-		val = etpm.challenge(rnd)
+-		result = decrypt_block(val, l3key)
+-	if device == "dm7025" or result[80:88] == rnd:
+-		driver = iNetwork.detectWlanModule(iface)
+-	else:
+-		driver = 'dreambox'
+-	print 'Using "%s" as wpa-supplicant driver' % (driver)
++	driver = iNetwork.detectWlanModule(iface)
+ 	ret = ""
+ 	if driver == 'madwifi' and config.plugins.wlan.hiddenessid.value:
+ 		ret += "\tpre-up iwconfig " + iface + " essid \"" + re_escape(config.plugins.wlan.essid.value) + "\" || true\n"
+--- a/lib/python/Screens/NetworkSetup.py	2011-02-17 14:15:10.000000000 +0300
++++ b/lib/python/Screens/NetworkSetup.py	2011-03-26 22:11:05.000000000 +0300
+@@ -665,7 +700,12 @@
+ 		self["Statustext"] = StaticText()
+ 		self["statuspic"] = MultiPixmap()
+ 		self["statuspic"].hide()
+-		
++###############		
++		from pythonwifi.iwlibs import getWNICnames
++		temp_iface=getWNICnames()
++		if temp_iface == []:
++			os_system("ifconfig " + self.iface + " up")
++################		
+ 		self.oktext = _("Press OK on your remote control to continue.")
+ 		self.reboottext = _("Your Dreambox will restart after pressing OK on your remote control.")
+ 		self.errortext = _("No working wireless network interface found.\n Please verify that you have attached a compatible WLAN device or enable your local network interface.")
+#--- a/lib/python/Plugins/SystemPlugins/WirelessLan/Wlan.py	2011-02-17 14:15:10.000000000 +0300
+#+++ b/lib/python/Plugins/SystemPlugins/WirelessLan/Wlan.py	2000-01-01 03:15:20.000000000 +0300
+#@@ -470,9 +470,9 @@
+# 					else:
+# 						enc = _("Disabled")
+# 				else:
+#-					enc = line[line.index('Encryption key')+15 :line.index('   Security')]
+#-					if enc is not None:
+#-						enc = _("Enabled")
+#+					#enc = line[line.index('Encryption key')+15 :line.index('   Security')]
+#+					#if enc is not None:
+#+					enc = _("Enabled")
+# 				if enc is not None:
+# 					data['encryption'] = enc
+# 			if 'Quality' in line:

@@ -1,0 +1,20 @@
+--- a/lib/python/Tools/NumericalTextInput.py	2010-12-27 23:45:41.000000000 +0300
++++ b/lib/python/Tools/NumericalTextInput.py	2011-02-17 14:15:10.000000000 +0300
+@@ -52,6 +52,17 @@
+ 			self.mapping.append (u"pqrs7PQRS") # 7
+ 			self.mapping.append (u"tuvúù8TUVÚÙ") # 8
+ 			self.mapping.append (u"wxyz9WXYZ") # 9
++		elif self.lang == 'ru_RU':
++			self.mapping.append (u".,?'+\"0-()@/:_$!=") # 0
++			self.mapping.append (u" 1") # 1
++			self.mapping.append (u"abc2ABCабвг") # 2
++			self.mapping.append (u"def3DEFдежз") # 3
++			self.mapping.append (u"ghi4GHIийкл") # 4
++			self.mapping.append (u"jkl5JKLмноп") # 5
++			self.mapping.append (u"mno6MNOрсту") # 6
++			self.mapping.append (u"pqrs7PQRSфхцч") # 7
++			self.mapping.append (u"tuv8TUVшщъы") # 8
++			self.mapping.append (u"wxyz9WXYZьэюя") # 9
+ 		if self.lang in ('sv_SE', 'fi_FI'):
+ 			self.mapping.append (u"0,?!&@=*'+\"()$~") # 0
+ 			self.mapping.append (u" 1.:/-_") # 1

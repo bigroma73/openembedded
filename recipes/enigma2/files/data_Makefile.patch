@@ -1,0 +1,10 @@
+--- git/data/Makefile.am.old	2011-04-17 23:45:53.000000000 +0300
++++ git/data/Makefile.am	2011-04-17 23:46:22.000000000 +0300
+@@ -9,6 +9,7 @@
+ 	menu.xml \
+ 	prev.png \
+ 	radio.mvi \
++	mp3.mvi \
+ 	rcpositions.xml \
+ 	setup.xml \
+ 	skin_default.xml \

@@ -1,0 +1,572 @@
+--- linux-2.6.18/drivers/mtd/brcmnand/brcmnand_base.c	2011-05-17 19:18:49.430550344 +0200
++++ linux-2.6.18-patched/drivers/mtd/brcmnand/brcmnand_base.c	2011-05-17 19:41:59.702550189 +0200
+@@ -263,6 +263,12 @@
+ 		.ctrlVersion = CONFIG_MTD_BRCMNAND_VERS_2_1,
+ 	},
+ 
++#if 0 
++/* 
++ * SW3556-862, SWLINUX-1459
++ * Samsung replaced this SLC part with a new SLC part, different block size and page size but re-use the same ID
++ * Side effect: The old flash part can no longer be supported.
++ */
+ 	{	/* 6 */
+ 		.chipId = SAMSUNG_K9K8G08U0A,
+ 		.mafId = FLASHTYPE_SAMSUNG,
+@@ -273,6 +279,18 @@
+ 		.nop=4,
+ 		.ctrlVersion = CONFIG_MTD_BRCMNAND_VERS_2_1,
+ 	},
++#else
++	{	/* 6 Same old ID 0xD3, new part, so the old #define macro is kept, but IDstr is changed to reflect new part number */
++		.chipId = SAMSUNG_K9K8G08U0A,
++		.mafId = FLASHTYPE_SAMSUNG,
++		.chipIdStr = "Samsung K9F8G08U0M",
++		.options = NAND_USE_FLASH_BBT,
++		.idOptions = BRCMNAND_ID_EXT_BYTES, /* New Samsung SLC has all 5 ID bytes defined */
++		.timing1 = 0, .timing2 = 0,
++		.nop=4,
++		.ctrlVersion = CONFIG_MTD_BRCMNAND_VERS_2_1,
++	},
++#endif
+ 
+ 
+ 	{	/* 7 */
+@@ -523,7 +541,7 @@
+ 	{	/* 29 */
+ 		.chipId = SAMSUNG_K9GA08U0D,
+ 		.mafId = FLASHTYPE_SAMSUNG,
+-		.chipIdStr = "Samsung K9GA08U0D",
++		.chipIdStr = "Samsung K9GAG08U0D",
+ 		.options = NAND_USE_FLASH_BBT, 		/* Use BBT on flash */
+ 				//| NAND_COMPLEX_OOB_WRITE	/* Write data together with OOB for write_oob */
+ 		.idOptions = BRCMNAND_ID_EXT_BYTES_TYPE2,
+@@ -764,11 +782,13 @@
+ /*
+  * Disable ECC, and return the original ACC register (for restore)
+  */
+-uint32_t brcmnand_disable_ecc(void)
++uint32_t brcmnand_disable_ecc(struct brcmnand_chip *chip)
+ {
+ 	uint32_t acc0;
+ 	uint32_t acc;
+-	
++
++	chip->pagebuf = -1LL;
++
+ 	/* Disable ECC */
+ 	acc0 = brcmnand_ctrl_read(BCHP_NAND_ACC_CONTROL);
+ 	acc = acc0 & ~(BCHP_NAND_ACC_CONTROL_RD_ECC_EN_MASK | BCHP_NAND_ACC_CONTROL_RD_ECC_BLK0_EN_MASK);
+@@ -777,9 +797,10 @@
+ 	return acc0;
+ }
+ 
+-
+-void brcmnand_restore_ecc(uint32_t orig_acc0) 
++void brcmnand_restore_ecc(struct brcmnand_chip *chip, uint32_t orig_acc0)
+ {
++	chip->pagebuf = -1LL;
++
+ 	brcmnand_ctrl_write(BCHP_NAND_ACC_CONTROL, orig_acc0);
+ }
+ 	
+@@ -1322,6 +1343,9 @@
+  * BRCMNAND_UNCORRECTABLE_ECC_ERROR	(-1)
+  * BRCMNAND_FLASH_STATUS_ERROR			(-2)
+  * BRCMNAND_TIMED_OUT					(-3)
++ *
++ * Is_Valid in the sense that the data is valid in the cache.  
++ * It does not means that the data is either correct or correctable.
+  */
+  
+ static int brcmnand_cache_is_valid(struct mtd_info* mtd,  int state, loff_t offset) 
+@@ -1339,23 +1363,17 @@
+ 		PLATFORM_IOFLUSH_WAR();
+ 		ready = chip->ctrl_read(BCHP_NAND_INTFC_STATUS);
+ 
+-		if (ready & (BCHP_NAND_INTFC_STATUS_CTLR_READY_MASK | 0x1)) {
++		if ((ready & BCHP_NAND_INTFC_STATUS_CTLR_READY_MASK) 
++		&& (ready & BCHP_NAND_INTFC_STATUS_CACHE_VALID_MASK)) {
+ 			int ecc;
+-			
+-			if (ready & 0x1) {
+-				printk(KERN_ERR "%s: Flash chip report error %08x\n", __FUNCTION__, ready);
+-				return BRCMNAND_FLASH_STATUS_ERROR;
+-			}
+ 
+-			//if (!raw) {
+ 			ecc = brcmnand_ctrl_verify_ecc(chip, state, 0);
+ // Let caller handle it
+ //printk("%s: Possible Uncorrectable ECC error at offset %08x\n", __FUNCTION__, (unsigned long) offset);
+-if (gdebug > 3 ) {
+-printk("<--%s: ret = %d\n", __FUNCTION__, ecc);}
++//if (gdebug > 3 && ecc) {
++//printk("<--%s: ret = %d\n", __FUNCTION__, ecc);}
+ 			return ecc;
+-			//}
+-			//return BRCMNAND_SUCCESS;
++			
+ 		}
+ 		if (state != FL_READING && (!wr_preempt_en) && !in_interrupt())
+ 			cond_resched();
+@@ -1916,7 +1934,7 @@
+ 
+ #if 1 /* Testing 1 2 3 */
+ 	/* Disable ECC */
+-	acc0 = brcmnand_disable_ecc();
++	acc0 = brcmnand_disable_ecc(chip);
+ 
+ 	chip->ctrl_writeAddr(chip, offset, 0);
+ 	PLATFORM_IOFLUSH_WAR();
+@@ -1926,7 +1944,7 @@
+ 	(void) brcmnand_spare_is_valid(mtd, FL_READING, 1);
+ 	
+ 	// Restore acc
+-	brcmnand_restore_ecc(acc0);
++	brcmnand_restore_ecc(chip, acc0);
+ #endif
+ 
+ 	for (i = 0; i < 4; i++) {
+@@ -2190,7 +2208,7 @@
+ 	int ret = 0, retries=2;
+ 	
+ 	/* Disable ECC */
+-	acc0 = brcmnand_disable_ecc();
++	acc0 = brcmnand_disable_ecc(chip);
+ 
+ 	while (retries >= 0) {
+ 		// Resubmit the read-op
+@@ -2255,7 +2273,7 @@
+ 
+ restore_ecc:
+ 	// Restore acc
+-	brcmnand_restore_ecc(acc0);
++	brcmnand_restore_ecc(chip, acc0);
+ 	return ret;
+ }
+ #endif
+@@ -2336,7 +2354,7 @@
+ 			}
+ 
+ #ifndef DEBUG_HW_ECC
+-			if (oobarea || (ret == BRCMNAND_CORRECTABLE_ECC_ERROR)) 
++			if (oobarea || (valid == BRCMNAND_CORRECTABLE_ECC_ERROR)) 
+ #endif
+ 			{
+ 				PLATFORM_IOFLUSH_WAR();
+@@ -2349,7 +2367,7 @@
+ 
+ #ifndef DEBUG_HW_ECC // Comment out for debugging
+ 			/* Make sure error was not in ECC bytes */
+-			if (ret == BRCMNAND_CORRECTABLE_ECC_ERROR && 
++			if (valid == BRCMNAND_CORRECTABLE_ECC_ERROR && 
+ 				chip->ecclevel == BRCMNAND_ECC_HAMMING) 
+ #endif
+ 
+@@ -2366,7 +2384,12 @@
+ 				}
+ 				
+ 			}
+-			ret = 0;
++			
++			if (valid == BRCMNAND_CORRECTABLE_ECC_ERROR) 
++				ret = BRCMNAND_CORRECTABLE_ECC_ERROR;
++			else
++				ret = 0;
++		 
+ 			done = 1;
+ 			break;
+ 			
+@@ -3804,7 +3827,8 @@
+ if (gdebug > 3 ) {
+ printk("-->%s, page=%0llx\n", __FUNCTION__, page);}
+ 
+-	chip->pagebuf = page;
++	if (page == chip->pagebuf)
++		chip->pagebuf = -1LL;
+ 
+ 	for (eccstep = 0; eccstep < chip->eccsteps && ret == 0; eccstep++) {
+ 		ret = brcmnand_posted_read_cache(mtd, &outp_buf[dataRead], 
+@@ -3850,11 +3874,11 @@
+ 	int ret = 0;
+ 	uint64_t offset = page << chip->page_shift;
+ 
+-
+ if (gdebug > 3 ) {
+ printk("-->%s, offset=%0llx\n", __FUNCTION__, offset);}
+ 
+-	chip->pagebuf = page;
++	if (page == chip->pagebuf)
++		chip->pagebuf = -1LL;
+ 
+ 	for (eccstep = 0; eccstep < chip->eccsteps && ret == 0; eccstep++) {
+ //gdebug=4;
+@@ -4019,6 +4043,7 @@
+ 			realpage++;
+ 			continue;
+ 		}
++
+ 		/* Skip this page, but write the OOB */
+ 		if (count == j && nonecccount != k) {
+ 			ret = chip->write_page_oob(mtd, blk_buf + oob_idx, realpage);
+@@ -4291,8 +4316,6 @@
+ 		return (ret);
+ 	}
+ 
+-	chip->pagebuf = page;
+-
+ 	spin_lock_irqsave(&gJobQ.lock, flags);
+ 	if (!list_empty(&gJobQ.jobQ)) {
+ 		printk("%s: Start read page but job queue not empty\n", __FUNCTION__);
+@@ -4584,6 +4607,7 @@
+ 	oob = ops->oobbuf;
+ 
+ #ifdef CONFIG_MTD_BRCMNAND_ISR_QUEUE	
++#error "FIXME pagecache"
+ 	/*
+ 	 * Group several pages for submission for small page NAND
+ 	 */
+@@ -4608,14 +4632,13 @@
+ 				/* Submit 1 page at a time */
+ 
+ 				numPages = 1; // We count partial page read
+-				ret = chip->read_page(mtd, bufpoi, chip->oob_poi, realpage);				
++				ret = chip->read_page(mtd, bufpoi, chip->oob_poi, realpage);
+ 
+ 				if (ret < 0)
+ 					break;
+ 
+ 				/* Transfer not aligned data */
+ 				if (!aligned) {
+-					chip->pagebuf = realpage;
+ 					memcpy(buf, &bufpoi[col], bytes);
+ 				}
+ 				buf += bytes;
+@@ -4662,20 +4685,16 @@
+ 	{
+ 		while(1) {
+ 			bytes = min(mtd->writesize - col, readlen);
+-			aligned = (bytes == mtd->writesize);
+-			
+-			bufpoi = aligned ? buf : chip->buffers->databuf;
+ 
+-			ret = chip->read_page(mtd, bufpoi, chip->oob_poi, realpage);
++			bufpoi = chip->buffers->databuf;
++
++			ret = realpage != chip->pagebuf ? chip->read_page(mtd, bufpoi, chip->oob_poi, realpage) : 0;
+ 
+ 			if (ret < 0)
+ 				break;
+ 
+-			/* Transfer not aligned data */
+-			if (!aligned) {
+-				chip->pagebuf = realpage;
+-				memcpy(buf, &bufpoi[col], bytes);
+-			}
++			chip->pagebuf = realpage;
++			memcpy(buf, &bufpoi[col], bytes);
+ 
+ 			buf += bytes;
+ 
+@@ -4780,14 +4799,15 @@
+  * We will not mark a block bad when the a correctable error already happened on the same page
+  */
+ #if CONFIG_MTD_BRCMNAND_VERSION <= CONFIG_MTD_BRCMNAND_VERS_3_4
+-					ret = 0;
+-#else
++					if (chip->ecclevel != BRCMNAND_ECC_HAMMING)
++							ret = 0;
++					else
++#endif
+ 					if (status) {
+ 						ret = -EUCLEAN;
+ 					} else {
+ 						ret = 0;
+ 					}
+-#endif
+ 				}
+ 				if (gdebug > 3) {
+ 					printk(KERN_INFO "DEBUG -> %s ret = %d, status = %d\n", __FUNCTION__, ret, status);
+@@ -4837,10 +4857,11 @@
+ 
+ 	while(1) {
+ //		sndcmd = chip->ecc.read_oob(mtd, chip, page, sndcmd);
+-		ret = chip->read_page_oob(mtd, chip->oob_poi, realpage);
++
++		ret = realpage != chip->pagebuf ? chip->read_page_oob(mtd, chip->oob_poi, realpage) : 0;
+ 		if (ret)
+ 			break;
+-		
++
+ 		buf = brcmnand_transfer_oob(chip, buf, ops);
+ 
+ #if 0
+@@ -5241,11 +5262,11 @@
+ 	int ret = 0;
+ 	uint64_t offset = page << chip->page_shift;
+ 
+-
+ if (gdebug > 3 ) {
+ printk("-->%s, offset=%0llx\n", __FUNCTION__, offset);}
+ 
+-	chip->pagebuf = page;
++	if (chip->pagebuf == page)
++		chip->pagebuf = -1LL;
+ 
+ 	for (eccstep = 0; eccstep < chip->eccsteps && ret == 0; eccstep++) {
+ 		ret = brcmnand_posted_write_cache(mtd, &inp_buf[dataWritten], 
+@@ -5319,8 +5340,6 @@
+ 		return (ret);
+ 	}
+ 
+-	chip->pagebuf = page;
+-
+ 	spin_lock_irqsave(&gJobQ.lock, flags);
+ 	if (!list_empty(&gJobQ.jobQ)) {
+ 		printk("%s: Start read page but job queue not empty\n", __FUNCTION__);
+@@ -5567,8 +5586,6 @@
+ 	chip->select_chip(mtd, chipnr);
+ */
+ 
+-
+-
+ 	realpage = to >> chip->page_shift;
+ 	//page = realpage & chip->pagemask;
+ 	blockmask = (1 << (chip->phys_erase_shift - chip->page_shift)) - 1;
+@@ -5696,7 +5713,6 @@
+ if (gdebug > 3 ) {
+ printk("-->%s, offset=%0llx\n", __FUNCTION__, to);}
+ 
+-
+ 	/* Do not allow writes past end of device */
+ 	if (unlikely((to + len) > device_size(mtd))) {
+   		DEBUG(MTD_DEBUG_LEVEL0, "%s: Attempt to write beyond end of device\n",
+@@ -5736,7 +5752,8 @@
+ 	int ret = 0;
+ 	uint64_t offset = page << chip->page_shift;
+ 
+-	chip->pagebuf = page;
++	if (page == chip->pagebuf)
++		chip->pagebuf = -1LL;
+ 
+ 	for (eccstep = 0; eccstep < chip->eccsteps && ret == 0; eccstep++) {
+ 		ret = brcmnand_posted_write_oob(mtd,  &inp_oob[oobWritten] , 
+@@ -5811,10 +5828,6 @@
+ 		return -EROFS;
+ #endif
+ 
+-	/* Invalidate the page cache, if we write to the cached page */
+-	if ((int64_t) page == chip->pagebuf)
+-		chip->pagebuf = -1LL;
+-
+ 	chip->oob_poi = BRCMNAND_OOBBUF(chip->buffers);
+ 	memset(chip->oob_poi, 0xff, mtd->oobsize);
+ 	brcmnand_fill_oob(chip, ops->oobbuf, ops);
+@@ -6135,8 +6148,15 @@
+ 		brcmnand_get_device(mtd, FL_READING);
+ 	}
+ 	
+-	/* Return info from the table */
+-	res = chip->isbad_bbt(mtd, ofs, allowbbt);
++	// BBT already initialized
++	if (chip->isbad_bbt) {
++	
++		/* Return info from the table */
++		res = chip->isbad_bbt(mtd, ofs, allowbbt);
++	}
++	else {
++		res = brcmnand_isbad_raw(mtd, ofs);
++	}
+ 
+ 	if (getchip) {
+ 		brcmnand_release_device(mtd);
+@@ -6287,6 +6307,10 @@
+ 		return -EINVAL;
+ 	}
+ 
++	// invalidate pagebuf when the corresponding block is erased
++	addr = chip->pagebuf * chip->pageSize;
++	if (addr >= instr->addr && addr < (instr->addr+instr->len))
++		chip->pagebuf = -1LL;
+ 
+ 	instr->fail_addr = 0xffffffffffffffffULL;
+ 
+--- linux-2.6.18/drivers/mtd/brcmnand/brcmnand_bbt.c	2011-05-17 19:18:49.430550344 +0200
++++ linux-2.6.18-patched/drivers/mtd/brcmnand/brcmnand_bbt.c	2011-05-17 19:41:59.702550189 +0200
+@@ -275,7 +275,7 @@
+ 		res = mtd->read(mtd, from, len, &retlen, buf);
+ 		if (res < 0) {
+ 			if (retlen != len) {
+-				printk (KERN_ERR "%s: Error reading bad block table, retlen=%d\n", __FUNCTION__);
++				printk (KERN_ERR "%s: Error reading bad block table, retlen=%d\n", __FUNCTION__, retlen);
+ 				return res;
+ 			}
+ 			printk (KERN_ERR "%s: ECC error while reading bad block table\n", __FUNCTION__);
+@@ -533,13 +533,13 @@
+ 			uint32_t acc0;
+ 	
+ 			// Disable ECC
+-			acc0 = brcmnand_disable_ecc();
++			acc0 = brcmnand_disable_ecc((struct brcmnand_chip*)(mtd->priv));
+ 
+ 			// Re-read the OOB
+ 			ret = mtd->read_oob(mtd, offs, &ops);
+ 
+ 			// Enable ECC back
+-			brcmnand_restore_ecc(acc0);
++			brcmnand_restore_ecc((struct brcmnand_chip*)(mtd->priv), acc0);
+ 		}
+ 		if (ret)
+ 			return ret;
+@@ -799,7 +799,9 @@
+ 	loff_t to;
+ 	struct mtd_oob_ops ops;
+ 
++#ifdef DEBUG_BBT
+ bbt_outofspace_retry:
++#endif
+ 
+ DEBUG(MTD_DEBUG_LEVEL3, "-->%s\n", __FUNCTION__);
+ 	ops.ooblen = mtd->oobsize;
+@@ -1432,12 +1434,12 @@
+ {
+ 	struct brcmnand_chip *this = mtd->priv;
+ 	int len, res = 0, writeops = 0;
+-	int chip, chipsel;
++//	int chip, chipsel;
+ 	uint8_t *buf = NULL;
+ 	struct nand_bbt_descr *td = this->bbt_td;
+ 	struct nand_bbt_descr *md = this->bbt_md;
+ 	uint32_t bbtSize;
+-	uint32_t block;
++//	uint32_t block;
+ 	uint64_t bOffset, startBlock, badBlock = 0; 
+ 	int modified = 0;
+ 
+@@ -1882,7 +1884,7 @@
+ //bOffsetEnd = 0x7ff80000;
+ 
+ 	/* Disable ECC */
+-	acc0 = brcmnand_disable_ecc();
++	acc0 = brcmnand_disable_ecc((struct brcmnand_chip *)(mtd->priv));
+ 
+ PRINTK("Invalidate ECC at page %llx\n", bbt0Page);
+ 
+@@ -1891,7 +1893,7 @@
+ 	if (res) PRINTK("%s: write_page_oob failed, res=%d\n", __FUNCTION__, res);
+ 
+ 	// Restore acc0
+-	brcmnand_restore_ecc(acc0);
++	brcmnand_restore_ecc((struct brcmnand_chip *)(mtd->priv), acc0);
+ }
+ #else
+ 
+@@ -2227,6 +2229,82 @@
+ 	return 1;
+ }
+ 
++/**
++ * brcmnand_isbad_raw - [NAND Interface] Check if a block is bad in the absence of BBT
++ * @mtd:	MTD device structure
++ * @offs:	offset in the device
++ *
++ * Each byte in the BBT contains 4 entries, 2 bits each per block.
++ * So the entry for the block b is:
++ * bbt[b >> 2] & (0x3 << ((b & 0x3) << 1)))
++ *
++*/
++int brcmnand_isbad_raw (struct mtd_info *mtd, loff_t offs)
++{
++	struct brcmnand_chip *this = mtd->priv;
++	//uint32_t block; // Used as an index, so 32bit.
++	uint8_t	isBadBlock = 0;
++	int i;
++
++	unsigned char oobbuf[64];
++	int numpages;
++	/* THT: This __can__ be a 36bit integer (NAND controller address space is 48bit wide, minus
++	 * page size of 2*12, therefore 36bit max
++	  */
++	uint64_t blockPage = offs >> this->page_shift;
++	int dir;
++	uint64_t page;
++
++printk("-->%s(offs=%llx\n", __FUNCTION__, offs);
++
++	/* How many pages should we scan */
++	if (this->badblock_pattern->options & NAND_BBT_SCAN2NDPAGE) {
++		if (this->options &  NAND_SCAN_BI_3RD_PAGE) {
++			numpages = 3;
++		}
++		else {
++			numpages = 2;
++		}
++	} else {
++		numpages = 1;
++	}
++
++printk("%s: 20\n", __FUNCTION__);
++
++	if (!NAND_IS_MLC(this)) { // SLC: First and 2nd page
++		dir = 1;
++		page = blockPage; // first page of block
++	}
++	else { // MLC: Read last page
++		int pagesPerBlock = mtd->erasesize/mtd->writesize;
++		
++		dir = -1;
++		page = blockPage + pagesPerBlock - 1; // last page of block
++	}
++
++printk("%s: 20\n", __FUNCTION__);
++	
++	for (i=0; i<numpages; i++, page += i*dir) {
++		int res;
++		//int retlen = 0;
++
++printk("%s: 50 calling read_page_oob=%p\n", __FUNCTION__, this->read_page_oob);
++		res = this->read_page_oob(mtd, oobbuf, page);
++		if (!res) {
++			if (check_short_pattern (oobbuf, this->badblock_pattern)) {
++				isBadBlock = 1;
++				break;
++			}
++		}
++		else {
++			printk(KERN_DEBUG "brcmnand_read_pageoob returns %d for page %0llx\n",
++				res, page);
++		}
++	}
++		
++	return isBadBlock;
++}
++
+ 
+ /**
+  * brcmnand_default_bbt - [NAND Interface] Select a default bad block table for the device
+--- linux-2.6.18/drivers/mtd/brcmnand/brcmnand_priv.h	2011-05-17 19:18:49.434550344 +0200
++++ linux-2.6.18-patched/drivers/mtd/brcmnand/brcmnand_priv.h	2011-05-17 19:33:01.438550296 +0200
+@@ -303,6 +303,9 @@
+ extern void brcmnand_release(struct mtd_info *mtd);
+ 
+ /* BrcmNAND BBT interface */
++/* Read the OOB bytes and tell whether a block is bad without consulting the BBT */
++extern int brcmnand_isbad_raw (struct mtd_info *mtd, loff_t offs);
++
+ extern int brcmnand_scan_bbt(struct mtd_info *mtd, struct nand_bbt_descr *bd);
+ extern int brcmnand_default_bbt(struct mtd_info *mtd);
+ 
+@@ -323,10 +326,10 @@
+ /*
+  * Disable ECC, and return the original ACC register (for restore)
+  */
+-uint32_t brcmnand_disable_ecc(void);
++uint32_t brcmnand_disable_ecc(struct brcmnand_chip *chip);
+ 
+-void brcmnand_restore_ecc(uint32_t orig_acc0);
++void brcmnand_restore_ecc(struct brcmnand_chip *chip, uint32_t orig_acc0);
+ 
+-void brcmnand_post_mortem_dump(struct mtd_info* mtd, loff_t offset);	
++void brcmnand_post_mortem_dump(struct mtd_info* mtd, loff_t offset);
+ 
+ #endif

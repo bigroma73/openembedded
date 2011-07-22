@@ -1,0 +1,219 @@
+diff -Naur a/data/setup.xml b/data/setup.xml
+--- a/data/setup.xml	2011-03-30 11:05:42.000000000 +0300
++++ b/data/setup.xml	2011-03-30 11:16:00.000000000 +0300
+@@ -35,6 +35,8 @@
+ 			<item level="0" text="Infobar timeout">config.usage.infobar_timeout</item>
+ 			<item level="1" text="12V output" requires="12V_Output">config.usage.output_12V</item>
+ 			<item level="0" text="Show event-progress in channel selection">config.usage.show_event_progress_in_servicelist</item>
++			<item level="0" text="Show Event Percentage in channel selection">config.usage.show_percentage_progress_in_servicelist</item>
++			<item level="0" text="Alignment Event in channel selection">config.usage.aligment_event_in_servicelist</item>
+ 			<item level="2" text="Show infobar on channel change">config.usage.show_infobar_on_zap</item>
+ 			<item level="2" text="Show infobar on skip forward/backward">config.usage.show_infobar_on_skip</item>
+ 			<item level="2" text="Show infobar on event change">config.usage.show_infobar_on_event_change</item>
+diff -Naur a/lib/python/Components/ServiceList.py b/lib/python/Components/ServiceList.py
+--- a/lib/python/Components/ServiceList.py	2011-03-30 00:29:36.000000000 +0300
++++ b/lib/python/Components/ServiceList.py	2011-03-31 00:41:02.000000000 +0300
+@@ -44,8 +44,11 @@
+ 		self.root = None
+ 		self.mode = self.MODE_NORMAL
+ 		self.ItemHeight = 28
++		self.ShiftAligment = 210
++		self.PercentageWidth = 35
+ 		self.ServiceNameFont = parseFont("Regular;22", ((1,1),(1,1)))
+ 		self.ServiceInfoFont = parseFont("Regular;18", ((1,1),(1,1)))
++		self.EventPercentageFont = parseFont("Regular;18", ((1,1),(1,1)))	
+ 		self.ServiceNumberFont = parseFont("Regular;20", ((1,1),(1,1)))
+ 		self.onSelectionChanged = [ ]
+ 
+@@ -76,14 +79,24 @@
+ 					self.l.setColor(eListboxServiceContent.serviceDescriptionColor, parseColor(value))
+ 				elif attrib == "colorServiceDescriptionSelected":
+ 					self.l.setColor(eListboxServiceContent.serviceDescriptionColorSelected, parseColor(value))
++				elif attrib == "colorEventPercentage":
++                                        self.l.setColor(eListboxServiceContent.eventPercentageColor, parseColor(value))
++				elif attrib == "colorEventPercentageSelected":
++                                        self.l.setColor(eListboxServiceContent.eventPercentageColorSelected, parseColor(value))
+ 				elif attrib == "picServiceEventProgressbar":
+ 					pic = LoadPixmap(resolveFilename(SCOPE_CURRENT_SKIN, value))
+ 					if pic:
+ 						self.l.setPixmap(self.l.picServiceEventProgressbar, pic)
+ 				elif attrib == "serviceItemHeight":
+ 					self.ItemHeight = int(value)
++				elif attrib == "eventShiftAligment":
++                                        self.ShiftAligment = int(value)
++				elif attrib == "eventPercentageWidth":
++                                        self.PercentageWidth = int(value)
+ 				elif attrib == "serviceNameFont":
+ 					self.ServiceNameFont = parseFont(value, ((1,1),(1,1)))
++				elif attrib == "eventPercentageFont":
++                                        self.EventPercentageFont = parseFont(value, ((1,1),(1,1)))
+ 				elif attrib == "serviceInfoFont":
+ 					self.ServiceInfoFont = parseFont(value, ((1,1),(1,1)))
+ 				elif attrib == "serviceNumberFont":
+@@ -93,6 +106,12 @@
+ 		self.skinAttributes = attribs
+ 		return GUIComponent.applySkin(self, desktop, parent)
+ 
++	def setPercentageWidth(self, width):
++		self.l.setPercentageWidth(width)
++
++	def setShiftAligment(self, offset):
++                self.l.setShiftAligment(offset)
++		
+ 	def connectSelChanged(self, fnc):
+ 		if not fnc in self.onSelectionChanged:
+ 			self.onSelectionChanged.append(fnc)
+@@ -232,6 +251,14 @@
+ 	def setMode(self, mode):
+ 		self.mode = mode
+ 		self.l.setItemHeight(self.ItemHeight)
++		if config.usage.show_percentage_progress_in_servicelist.value:
++			self.l.setPercentageWidth(self.PercentageWidth)
++		else:
++			self.l.setPercentageWidth(0)
++		if config.usage.aligment_event_in_servicelist.value:
++			self.l.setShiftAligment(self.ShiftAligment)
++		else:
++			self.l.setShiftAligment(0)
+ 		self.l.setVisualMode(eListboxServiceContent.visModeComplex)
+ 		if mode == self.MODE_NORMAL:
+ 			if config.usage.show_event_progress_in_servicelist.value:
+@@ -240,6 +267,7 @@
+ 				self.l.setElementPosition(self.l.celServiceEventProgressbar, eRect(0, 0, 0, 0))
+ 			self.l.setElementFont(self.l.celServiceName, self.ServiceNameFont)
+ 			self.l.setElementPosition(self.l.celServiceName, eRect(0, 0, self.instance.size().width(), self.ItemHeight))
++			self.l.setElementFont(self.l.celEventPercentage, self.EventPercentageFont)
+ 			self.l.setElementFont(self.l.celServiceInfo, self.ServiceInfoFont)
+ 		else:
+ 			if config.usage.show_event_progress_in_servicelist.value:
+@@ -250,5 +278,6 @@
+ 			self.l.setElementPosition(self.l.celServiceNumber, eRect(0, 0, 50, self.ItemHeight))
+ 			self.l.setElementFont(self.l.celServiceName, self.ServiceNameFont)
+ 			self.l.setElementPosition(self.l.celServiceName, eRect(60, 0, self.instance.size().width()-60, self.ItemHeight))
++                        self.l.setElementFont(self.l.celEventPercentage, self.EventPercentageFont)
+ 			self.l.setElementFont(self.l.celServiceInfo, self.ServiceInfoFont)
+ 
+diff -Naur a/lib/python/Components/UsageConfig.py b/lib/python/Components/UsageConfig.py
+--- a/lib/python/Components/UsageConfig.py	2011-03-30 01:43:41.000000000 +0300
++++ b/lib/python/Components/UsageConfig.py	2011-03-30 11:16:49.000000000 +0300
+@@ -70,6 +70,10 @@
+ 
+ 	config.usage.show_event_progress_in_servicelist = ConfigYesNo(default = False)
+ 
++        config.usage.show_percentage_progress_in_servicelist = ConfigYesNo(default = True)
++
++        config.usage.aligment_event_in_servicelist = ConfigYesNo(default = True)
++
+ 	config.usage.blinking_display_clock_during_recording = ConfigYesNo(default = False)
+ 
+ 	config.usage.show_message_when_recording_starts = ConfigYesNo(default = True)
+diff -Naur a/lib/service/listboxservice.cpp b/lib/service/listboxservice.cpp
+--- a/lib/service/listboxservice.cpp	2011-03-29 23:12:12.000000000 +0300
++++ b/lib/service/listboxservice.cpp	2011-03-31 19:44:30.000000000 +0300
+@@ -208,6 +208,16 @@
+ 	return index;
+ }
+ 
++void eListboxServiceContent::setShiftAligment(int offset)
++{
++	m_shift_aligment = offset;
++}
++
++void eListboxServiceContent::setPercentageWidth (int width)
++{
++	m_percentage_width = width;
++}
++
+ void eListboxServiceContent::setVisualMode(int mode)
+ {
+ 	for (int i=0; i < celElements; ++i)
+@@ -587,6 +597,30 @@
+ 						service_info->getName(*m_cursor, text);
+ 					break;
+ 				}
++				case celEventPercentage:
++				{
++					if ( isPlayable && !service_info->getEvent(*m_cursor, evt) && m_percentage_width!=0)
++					{
++						std::string name = evt->getEventName();
++						if (!name.length())
++							continue;
++						char bla1[4];
++						int  blai = (difftime(time(NULL),evt->getBeginTime())*100)/evt->getDuration();
++						sprintf(bla1,"%d%%",blai);
++						text = bla1;
++						flags|=gPainter::RT_HALIGN_RIGHT;
++						if (serviceAvail)
++						{
++							if (!selected && m_color_set[eventPercentageColor])
++								painter.setForegroundColor(m_color[eventPercentageColor]);
++							else if (selected && m_color_set[eventPercentageColorSelected])
++								painter.setForegroundColor(m_color[eventPercentageColorSelected]);
++						}
++					}
++					else
++						continue;
++					break;
++				}
+ 				case celServiceInfo:
+ 				{
+ 					if ( isPlayable && !service_info->getEvent(*m_cursor, evt) )
+@@ -620,9 +654,17 @@
+ 				{
+ 					eRect bbox = para->getBoundBox();
+ 					int name_width = bbox.width()+8;
+-					m_element_position[celServiceInfo].setLeft(area.left()+name_width+xoffs);
++					if (name_width < m_shift_aligment)
++					{
++						name_width = m_shift_aligment;
++					}
++					m_element_position[celEventPercentage].setLeft(area.left()+name_width+xoffs);
++					m_element_position[celEventPercentage].setTop(area.top());
++					m_element_position[celEventPercentage].setWidth(m_percentage_width);
++					m_element_position[celEventPercentage].setHeight(area.height());
++					m_element_position[celServiceInfo].setLeft(area.left()+name_width+xoffs+m_percentage_width+6);
+ 					m_element_position[celServiceInfo].setTop(area.top());
+-					m_element_position[celServiceInfo].setWidth(area.width()-(name_width+xoffs));
++					m_element_position[celServiceInfo].setWidth(area.width()-(name_width+xoffs+m_percentage_width+6));
+ 					m_element_position[celServiceInfo].setHeight(area.height());
+ 				}
+ 
+diff -Naur a/lib/service/listboxservice.h b/lib/service/listboxservice.h
+--- a/lib/service/listboxservice.h	2011-03-29 23:04:40.000000000 +0300
++++ b/lib/service/listboxservice.h	2011-03-30 16:32:58.000000000 +0300
+@@ -51,6 +51,7 @@
+ 		celFolderPixmap,
+ 		celServiceEventProgressbar,
+ 		celServiceName,
++		celEventPercentage,
+ 		celServiceTypePixmap,
+ 		celServiceInfo, // "now" event
+ 		celElements
+@@ -80,6 +81,9 @@
+ 	int getItemHeight() { return m_itemheight; }
+ 	void setItemHeight(int height);
+ 
++	void setShiftAligment(int offset);
++        void setPercentageWidth (int width);
++
+ 	enum {
+ 		markedForeground,
+ 		markedForegroundSelected,
+@@ -92,6 +96,8 @@
+ 		serviceEventProgressbarBorderColorSelected,
+ 		serviceDescriptionColor,
+ 		serviceDescriptionColorSelected,
++		eventPercentageColor,
++		eventPercentageColorSelected,
+ 		colorElements
+ 	};
+ 	
+@@ -128,7 +134,7 @@
+ 	list::iterator m_cursor, m_saved_cursor;
+ 	
+ 	int m_cursor_number, m_saved_cursor_number;
+-	int m_size;
++	int m_size,m_percentage_width,m_shift_aligment;
+ 	
+ 	eSize m_itemsize;
+ 	ePtr<iServiceHandler> m_service_center;
