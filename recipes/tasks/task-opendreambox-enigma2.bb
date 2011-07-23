@@ -64,6 +64,7 @@ RRECOMMENDS_task-opendreambox-enigma2 = "\
   enigma2-plugin-systemplugins-autoresolution \
   enigma2-plugin-extensions-moviecut \
   enigma2-plugin-extensions-movieretitle \
+  enigma2-plugin-extensions-bitrateviewer \
   ntpdate \
   domica domica-skins domica-skin-hd-line-tvpro \
   enigma2-plugin-systemplugins-crossepg-oe1.6 \
