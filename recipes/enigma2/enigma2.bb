@@ -83,6 +83,7 @@ SRC_URI = " git://git.opendreambox.org/git/enigma2.git;protocol=git;branch=${BRA
 			file://enigma2_percent_patch_v0_2.patch;patch=1;pnum=1 \
 			file://nownext.patch;patch=1;pnum=1 \
 			file://data_Makefile.patch;patch=1;pnum=1 \
+			file://tr_time.patch;patch=1;pnum=1 \
 			http://www.upload.metabox.ru/dm800/source/enigma2.tar.bz2 \
 			file://menu_keymap_xml.patch;patch=1;pnum=1 \
 			file://spinner_Makefile.patch;patch=1;pnum=1 \

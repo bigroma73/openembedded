@@ -1,0 +1,10 @@
+--- 2/data/setup.xml	2011-07-21 09:54:27.156569201 +0300
++++ 1/data/setup.xml	2011-07-25 14:07:29.166694324 +0300
+@@ -40,6 +40,7 @@
+ 			<item level="0" text="Show Event Percentage in channel selection">config.usage.show_percentage_progress_in_servicelist</item>
+ 			<item level="0" text="Alignment Event in channel selection">config.usage.aligment_event_in_servicelist</item>
+ 			<item level="2" text="Show infobar on channel change">config.usage.show_infobar_on_zap</item>
++			<item level="2" text="Use transpodner time">config.misc.useTransponderTime</item>
+ 			<item level="2" text="Show infobar on skip forward/backward">config.usage.show_infobar_on_skip</item>
+ 			<item level="2" text="Show infobar on event change">config.usage.show_infobar_on_event_change</item>
+ 			<item level="2" text="Behavior when a movie is started">config.usage.on_movie_start</item>
