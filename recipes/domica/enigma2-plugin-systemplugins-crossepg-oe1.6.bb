@@ -3,7 +3,7 @@ HOMEPAGE = http://www.crossepg.com
 DEPENDS = "libxml2 zlib python"
 LICENSE = "GPLv2"
 
-REV ="305"
+REV ="306"
 PR = "r0"
 PN = "enigma2-plugin-systemplugins-crossepg"
 PV = "0.6.2-svn-${REV}"
