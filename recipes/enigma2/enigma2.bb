@@ -59,7 +59,7 @@ RDEPENDS_enigma2-plugin-systemplugins-wirelesslan = "wpa-supplicant wireless-too
 DESCRIPTION_append_enigma2-plugin-systemplugins-networkwizard = "provides easy step by step network configuration"
 
 PN = "enigma2"
-PR = "r0"
+PR = "r1"
 
 SRCDATE = "20110720"
 #SRCREV = "5e19a3f8a5e8ce8a4e2cb2b601a1b8ef3554e4be"
@@ -81,7 +81,7 @@ SRC_URI = " git://git.opendreambox.org/git/enigma2.git;protocol=git;branch=${BRA
 			file://About.diff;patch=1;pnum=1 \
 			file://InfoBarGenerics.diff;patch=1;pnum=1 \
 			file://enigma2_percent_patch_v0_2.patch;patch=1;pnum=1 \
-			file://nownext.patch;patch=1;pnum=1 \
+			file://nownext_v5.patch;patch=1;pnum=1 \
 			file://data_Makefile.patch;patch=1;pnum=1 \
 			file://tr_time.patch;patch=1;pnum=1 \
 			http://www.upload.metabox.ru/dm800/source/enigma2.tar.bz2 \

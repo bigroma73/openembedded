@@ -1,5 +1,5 @@
-diff -Naur 3/data/setup.xml 4/data/setup.xml
---- 3/data/setup.xml	2011-06-04 18:22:43.000000000 +0300
+diff -Naur 5/data/setup.xml 4/data/setup.xml
+--- 5/data/setup.xml	2011-06-04 18:22:43.000000000 +0300
 +++ 4/data/setup.xml	2011-06-10 21:59:09.000000000 +0300
 @@ -42,6 +42,7 @@
  			<item level="2" text="Show infobar on channel change">config.usage.show_infobar_on_zap</item>
@@ -9,8 +9,8 @@ diff -Naur 3/data/setup.xml 4/data/setup.xml
  			<item level="2" text="Behavior when a movie is started">config.usage.on_movie_start</item>
  			<item level="2" text="Behavior when a movie is stopped">config.usage.on_movie_stop</item>
  			<item level="2" text="Behavior when a movie reaches the end">config.usage.on_movie_eof</item>
-diff -Naur 3/lib/dvb/dvbtime.h 4/lib/dvb/dvbtime.h
---- 3/lib/dvb/dvbtime.h	2011-04-05 14:15:09.000000000 +0300
+diff -Naur 5/lib/dvb/dvbtime.h 4/lib/dvb/dvbtime.h
+--- 5/lib/dvb/dvbtime.h	2011-04-05 14:15:09.000000000 +0300
 +++ 4/lib/dvb/dvbtime.h	2011-06-11 00:31:18.000000000 +0300
 @@ -82,6 +82,7 @@
  	bool getUseDVBTime() { return m_use_dvb_time; }
@@ -20,9 +20,9 @@ diff -Naur 3/lib/dvb/dvbtime.h 4/lib/dvb/dvbtime.h
  	bool ready() const { return m_time_ready; }
  	static eDVBLocalTimeHandler *getInstance() { return instance; }
  };
-diff -Naur 3/lib/dvb/epgcache.cpp 4/lib/dvb/epgcache.cpp
---- 3/lib/dvb/epgcache.cpp	2011-06-11 01:16:13.000000000 +0300
-+++ 4/lib/dvb/epgcache.cpp	2011-06-20 22:47:10.000000000 +0300
+diff -Naur 5/lib/dvb/epgcache.cpp 4/lib/dvb/epgcache.cpp
+--- 5/lib/dvb/epgcache.cpp	2011-06-11 01:16:13.000000000 +0300
++++ 4/lib/dvb/epgcache.cpp	2011-06-20 23:07:22.000000000 +0300
 @@ -552,6 +552,10 @@
  			eit_event->start_time_5,
  			&event_hash);
@@ -34,8 +34,67 @@ diff -Naur 3/lib/dvb/epgcache.cpp 4/lib/dvb/epgcache.cpp
  		if ( TM == 3599 )
  			goto next;
  
-diff -Naur 3/lib/python/Components/UsageConfig.py 4/lib/python/Components/UsageConfig.py
---- 3/lib/python/Components/UsageConfig.py	2011-06-04 18:22:43.000000000 +0300
+diff -Naur 5/lib/python/Components/Converter/EventName.py 4/lib/python/Components/Converter/EventName.py
+--- 5/lib/python/Components/Converter/EventName.py	2011-07-25 14:13:04.000000000 +0300
++++ 4/lib/python/Components/Converter/EventName.py	2011-08-15 15:36:34.000000000 +0300
+@@ -1,7 +1,8 @@
+ from Components.Converter.Converter import Converter
+ from Components.Element import cached
++from Poll import Poll
+ 
+-class EventName(Converter, object):
++class EventName(Poll, Converter, object):
+ 	NAME = 0
+ 	SHORT_DESCRIPTION = 1
+ 	EXTENDED_DESCRIPTION = 2
+@@ -9,6 +10,9 @@
+ 	
+ 	def __init__(self, type):
+ 		Converter.__init__(self, type)
++		Poll.__init__(self)
++		self.poll_enabled = True
++		self.poll_interval = 1000
+ 		if type == "Description":
+ 			self.type = self.SHORT_DESCRIPTION
+ 		elif type == "ExtendedDescription":
+@@ -36,7 +40,7 @@
+ 			elif exten_desc == "":
+ 				ret_str = short_desc
+ 			else:
+-				ret_str = short_desc +"\n\n"+ exten_desc
++				ret_str = short_desc +"\n"+ exten_desc
+ 		elif self.type == self.ID:
+ 			ret_str = str(event.getEventId())
+ 
+diff -Naur 5/lib/python/Components/Converter/EventTime.py 4/lib/python/Components/Converter/EventTime.py
+--- 5/lib/python/Components/Converter/EventTime.py	2011-07-06 14:15:13.000000000 +0300
++++ 4/lib/python/Components/Converter/EventTime.py	2011-08-15 15:36:42.000000000 +0300
+@@ -13,20 +13,19 @@
+ 	def __init__(self, type):
+ 		Converter.__init__(self, type)
+ 		Poll.__init__(self)
++		self.poll_interval = 30*1000
++		self.poll_enabled = True
++
+ 		if type == "EndTime":
+ 			self.type = self.ENDTIME
+ 		elif type == "Remaining":
+ 			self.type = self.REMAINING
+-			self.poll_interval = 60*1000
+-			self.poll_enabled = True
+ 		elif type == "StartTime":
+ 			self.type = self.STARTTIME
+ 		elif type == "Duration":
+ 			self.type = self.DURATION
+ 		elif type == "Progress":
+ 			self.type = self.PROGRESS
+-			self.poll_interval = 30*1000
+-			self.poll_enabled = True
+ 		else:
+ 			raise ElementError("'%s' is not <StartTime|EndTime|Remaining|Duration|Progress> for EventTime converter" % type)
+ 
+diff -Naur 5/lib/python/Components/UsageConfig.py 4/lib/python/Components/UsageConfig.py
+--- 5/lib/python/Components/UsageConfig.py	2011-06-04 18:22:43.000000000 +0300
 +++ 4/lib/python/Components/UsageConfig.py	2011-06-10 22:03:50.000000000 +0300
 @@ -20,6 +20,7 @@
  	config.usage.show_infobar_on_zap = ConfigYesNo(default = True)
@@ -45,8 +104,8 @@ diff -Naur 3/lib/python/Components/UsageConfig.py 4/lib/python/Components/UsageC
  	config.usage.hdd_standby = ConfigSelection(default = "600", choices = [
  		("0", _("no standby")), ("10", "10 " + _("seconds")), ("30", "30 " + _("seconds")),
  		("60", "1 " + _("minute")), ("120", "2 " + _("minutes")),
-diff -Naur 3/lib/service/servicedvb.cpp 4/lib/service/servicedvb.cpp
---- 3/lib/service/servicedvb.cpp	2011-04-05 14:15:09.000000000 +0300
+diff -Naur 5/lib/service/servicedvb.cpp 4/lib/service/servicedvb.cpp
+--- 5/lib/service/servicedvb.cpp	2011-04-05 14:15:09.000000000 +0300
 +++ 4/lib/service/servicedvb.cpp	2011-06-11 00:07:49.000000000 +0300
 @@ -914,7 +914,7 @@
  }
@@ -163,8 +222,8 @@ diff -Naur 3/lib/service/servicedvb.cpp 4/lib/service/servicedvb.cpp
  	m_event((iPlayableService*)this, evStopped);
  	return 0;
  }
-diff -Naur 3/lib/service/servicedvb.h 4/lib/service/servicedvb.h
---- 3/lib/service/servicedvb.h	2011-04-05 14:15:09.000000000 +0300
+diff -Naur 5/lib/service/servicedvb.h 4/lib/service/servicedvb.h
+--- 5/lib/service/servicedvb.h	2011-04-05 14:15:09.000000000 +0300
 +++ 4/lib/service/servicedvb.h	2011-06-10 23:13:24.000000000 +0300
 @@ -282,6 +282,9 @@
  	ePtr<eTimer> m_subtitle_sync_timer;
