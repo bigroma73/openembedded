@@ -1,0 +1,24 @@
+--- 2010_0709_RT2870_Linux_STA_v2.4.0.1/os/linux/config.mk	2010-07-09 04:46:00.000000000 +0200
++++ os/linux/config.mk	2010-09-26 14:46:02.000000000 +0200
+@@ -8,10 +8,10 @@
+ HAS_XLINK=n
+ 
+ # Support Wpa_Supplicant
+-HAS_WPA_SUPPLICANT=n
++HAS_WPA_SUPPLICANT=y
+ 
+ # Support Native WpaSupplicant for Network Maganger
+-HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=n
++HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=y
+ 
+ #Support Net interface block while Tx-Sw queue full
+ HAS_BLOCK_NET_IF=n
+@@ -86,7 +86,7 @@
+ # config for STA mode
+ 
+ ifeq ($(RT28xx_MODE),STA)
+-WFLAGS += -DCONFIG_STA_SUPPORT -DDBG
++WFLAGS += -DCONFIG_STA_SUPPORT
+ 
+ ifeq ($(HAS_XLINK),y)
+ WFLAGS += -DXLINK_SUPPORT

@@ -43,7 +43,9 @@ WLAN_USB_MODULES_LEGACY = "\
   zd1211b \
   wlan-rt73 \
   r8712u \
-  rt3070 \  
+  rt3070 \
+  rt2870 \
+  rt3572 \
 "
 
 RDEPENDS_${PN}_append_dm500hd = "\

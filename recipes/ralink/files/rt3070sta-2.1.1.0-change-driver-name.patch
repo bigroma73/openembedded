@@ -1,0 +1,28 @@
+diff -Naur orig/include/os/rt_linux.h 2009_0525_RT3070_Linux_STA_v2.1.1.0/include/os/rt_linux.h
+--- orig/include/os/rt_linux.h	2011-02-23 11:34:39.972215001 +0200
++++ 2009_0525_RT3070_Linux_STA_v2.1.1.0/include/os/rt_linux.h	2011-02-23 11:36:00.608215000 +0200
+@@ -96,10 +96,10 @@
+ #ifdef CONFIG_STA_SUPPORT
+ 
+ #ifdef RTMP_MAC_USB
+-#define STA_PROFILE_PATH			"/etc/Wireless/RT2870STA/RT2870STA.dat"
++#define STA_PROFILE_PATH			"/etc/Wireless/RT3070STA/RT3070STA.dat"
+ #define STA_DRIVER_VERSION			"2.1.1.0"
+ #ifdef MULTIPLE_CARD_SUPPORT
+-#define CARD_INFO_PATH			"/etc/Wireless/RT2870STA/RT2870STACard.dat"
++#define CARD_INFO_PATH			"/etc/Wireless/RT3070STA/RT3070STACard.dat"
+ #endif // MULTIPLE_CARD_SUPPORT //
+ #endif // RTMP_MAC_USB //
+ 
+diff -Naur orig/include/rt_ate.h 2009_0525_RT3070_Linux_STA_v2.1.1.0/include/rt_ate.h
+--- orig/include/rt_ate.h	2011-02-23 11:34:39.968215001 +0200
++++ 2009_0525_RT3070_Linux_STA_v2.1.1.0/include/rt_ate.h	2011-02-23 11:58:20.988215001 +0200
+@@ -35,7 +35,7 @@
+ #ifdef RTMP_MAC_USB
+ #define EEPROM_SIZE								0x400
+ #ifdef CONFIG_STA_SUPPORT
+-#define EEPROM_BIN_FILE_NAME  "/etc/Wireless/RT2870STA/e2p.bin"
++#define EEPROM_BIN_FILE_NAME  "/etc/Wireless/RT3070STA/e2p.bin"
+ #endif // CONFIG_STA_SUPPORT //
+ #endif // RTMP_MAC_USB //
+ #endif // LINUX //

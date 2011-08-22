@@ -1,0 +1,25 @@
+--- 2010_1215_RT3572_Linux_STA_v2.5.0.0.DPO/os/linux/Makefile.4	2010-12-15 06:18:01.000000000 +0100
++++ 2010_1215_RT3572_Linux_STA_v2.5.0.0.DPO/os/linux/Makefile.4	2011-02-23 01:31:21.926886310 +0100
+@@ -1,8 +1,8 @@
+ include $(RT28xx_DIR)/os/linux/config.mk
+ 
+ MOD_NAME = rt$(CHIPSET)sta
+-DAT_PATH = /etc/Wireless/RT2870STA
+-DAT_FILE_NAME = RT2870STA.dat
++DAT_PATH = /etc/Wireless/RT3572STA
++DAT_FILE_NAME = RT3572STA.dat
+ 
+ OBJ := $(MOD_NAME).o
+
+--- 2010_1215_RT3572_Linux_STA_v2.5.0.0.DPO/os/linux/Makefile.6	2010-12-15 06:18:39.000000000 +0100
++++ 2010_1215_RT3572_Linux_STA_v2.5.0.0.DPO/os/linux/Makefile.6	2011-02-23 01:31:54.498886140 +0100
+@@ -1,8 +1,8 @@
+ include $(RT28xx_DIR)/os/linux/config.mk
+ 
+ MOD_NAME = rt$(CHIPSET)sta
+-DAT_PATH = /etc/Wireless/RT2870STA
+-DAT_FILE_NAME = RT2870STA.dat
++DAT_PATH = /etc/Wireless/RT3572STA
++DAT_FILE_NAME = RT3572STA.dat
+ 
+ obj-m := $(MOD_NAME).o

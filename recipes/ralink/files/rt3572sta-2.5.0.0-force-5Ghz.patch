@@ -1,0 +1,11 @@
+--- 2010_1215_RT3572_Linux_STA_v2.5.0.0.DPO/RT3572STA.dat  2010-12-15 06:10:23.000000000 +0100
++++ 2010_1215_RT3572_Linux_STA_v2.5.0.0.DPO/RT3572STA.dat  2011-02-21 17:23:48.000000000 +0100
+@@ -6,7 +6,7 @@
+ ChannelGeography=1
+ SSID=11n-AP
+ NetworkType=Infra
+-WirelessMode=5
++WirelessMode=8
+ Channel=0
+ BeaconPeriod=100
+ TxPower=100
