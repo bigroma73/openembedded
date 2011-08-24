@@ -247,7 +247,7 @@ class SecondInfoBar(Screen):
 
 	def BitCalc(self):
 		ref = self.session.nav.getCurrentlyPlayingServiceReference()
-		if ref not None:
+		if ref:
 			vpid = apid = dvbnamespace = tsid = onid = -1
 			service = self.session.nav.getCurrentService()
 			if service:
