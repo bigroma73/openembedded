@@ -247,22 +247,23 @@ class SecondInfoBar(Screen):
 
 	def BitCalc(self):
 		ref = self.session.nav.getCurrentlyPlayingServiceReference()
-		vpid = apid = dvbnamespace = tsid = onid = -1
-		service = self.session.nav.getCurrentService()
-		if service:
-			serviceInfo = service.info()
-			vpid = serviceInfo.getInfo(iServiceInformation.sVideoPID)
-			apid = serviceInfo.getInfo(iServiceInformation.sAudioPID)
-		if not ref.getPath():
-			tsid = ref.getData(2)
-			onid = ref.getData(3)
-			dvbnamespace = ref.getData(4)
-		if vpid:
-			self.videoBitrate = eBitrateCalculator(vpid, dvbnamespace, tsid, onid, 1000, 1024*1024) # pid, dvbnamespace, tsid, onid, refresh intervall, buffer size
-			self.videoBitrate.callback.append(self.getVideoBitrateData)
-		if apid:
-			self.audioBitrate = eBitrateCalculator(apid, dvbnamespace, tsid, onid, 1000, 64*1024)
-			self.audioBitrate.callback.append(self.getAudioBitrateData)
+		if ref not None:
+			vpid = apid = dvbnamespace = tsid = onid = -1
+			service = self.session.nav.getCurrentService()
+			if service:
+				serviceInfo = service.info()
+				vpid = serviceInfo.getInfo(iServiceInformation.sVideoPID)
+				apid = serviceInfo.getInfo(iServiceInformation.sAudioPID)
+			if not ref.getPath():
+				tsid = ref.getData(2)
+				onid = ref.getData(3)
+				dvbnamespace = ref.getData(4)
+			if vpid:
+				self.videoBitrate = eBitrateCalculator(vpid, dvbnamespace, tsid, onid, 1000, 1024*1024) # pid, dvbnamespace, tsid, onid, refresh intervall, buffer size
+				self.videoBitrate.callback.append(self.getVideoBitrateData)
+			if apid:
+				self.audioBitrate = eBitrateCalculator(apid, dvbnamespace, tsid, onid, 1000, 64*1024)
+				self.audioBitrate.callback.append(self.getAudioBitrateData)
 
 	def getVideoBitrateData(self,value, status): # value = rate in kbit/s, status ( 1  = ok || 0 = nok (zapped?))
 		if status:
