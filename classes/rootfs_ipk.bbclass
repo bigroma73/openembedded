@@ -96,7 +96,7 @@ fakeroot rootfs_ipk_do_rootfs () {
 		rm -rf ${IMAGE_ROOTFS}${libdir}/opkg
 		rm -rf ${IMAGE_ROOTFS}/usr/lib/opkg
 	fi
-	
+#	cp -Rf /GIT/dom/rootfs/* /git/dm800/build/tmp/rootfs/dreambox-image/
 	${ROOTFS_POSTPROCESS_COMMAND}
 	
 	log_check rootfs 	

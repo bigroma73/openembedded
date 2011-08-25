@@ -61,8 +61,7 @@ DESCRIPTION_append_enigma2-plugin-systemplugins-networkwizard = "provides easy s
 PN = "enigma2"
 PR = "r1"
 
-SRCDATE = "20110720"
-#SRCREV = "5e19a3f8a5e8ce8a4e2cb2b601a1b8ef3554e4be"
+SRCDATE = "20110823"
 #SRCDATE is NOT used by git to checkout a specific revision
 #but we need it to build a ipk package version
 #when you like to checkout a specific revision of e2 you need
@@ -72,7 +71,7 @@ SRCDATE = "20110720"
 ####################################################
 BRANCH = "experimental"
 PV = "experimental-git${SRCDATE}"
-SRCREV = ""
+SRCREV = "610ec8e3c6ed3556ba58f643b89183dd60e95312"
 ####################################################
 
 SRC_URI = " git://git.opendreambox.org/git/enigma2.git;protocol=git;branch=${BRANCH};tag=${SRCREV}  \
@@ -84,6 +83,7 @@ SRC_URI = " git://git.opendreambox.org/git/enigma2.git;protocol=git;branch=${BRA
 			file://nownext_v5.patch;patch=1;pnum=1 \
 			file://data_Makefile.patch;patch=1;pnum=1 \
 			file://tr_time.patch;patch=1;pnum=1 \
+#			file://clone2.diff;patch=1;pnum=1 \
 			http://www.upload.metabox.ru/dm800/source/enigma2.tar.bz2 \
 			file://menu_keymap_xml.patch;patch=1;pnum=1 \
 			file://spinner_Makefile.patch;patch=1;pnum=1 \
