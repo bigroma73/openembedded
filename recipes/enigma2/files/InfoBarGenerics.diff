@@ -465,6 +465,41 @@
  		self.oktext = _("Press OK on your remote control to continue.")
  		self.reboottext = _("Your Dreambox will restart after pressing OK on your remote control.")
  		self.errortext = _("No working wireless network interface found.\n Please verify that you have attached a compatible WLAN device or enable your local network interface.")
+--- a/lib/python/Screens/InfoBarGenerics.py	2011-03-19 16:08:51.000000000 +0300
++++ b/lib/python/Screens/InfoBarGenerics.py	2010-12-27 23:47:42.000000000 +0300
+@@ -40,7 +40,7 @@
+ from bisect import insort
+ 
+ from RecordTimer import RecordTimerEntry, RecordTimer
+-
++import os
+ # hack alert!
+ from Menu import MainMenu, mdom
+ 
+@@ -1334,7 +1334,7 @@
+ 				# ------------------ Menu Domica Patch ----------------
+ 				"red": (self.callDomicaRed, _("view Domica Red ...")),
+ 				"green": (self.callDomicaGreen, _("view Domica Green ...")),
+-				"yellow": (self.callDomicaYellow, _("view Domica Yellow ...")),
++				"yellow": (self.callRestart, _("view Domica Yellow ...")),
+ 				"blue": (self.callDomicaBlue, _("view Domica Blue ...")),
+ 			})
+ 	def callDomicaRed(self):
+@@ -1349,11 +1349,9 @@
+ 		self.session.open(Domica)
+                 DomicaButton(self,"")
+ 
+-	def callDomicaYellow(self):
+-                from Plugins.Extensions.Domica.plugin import DomicaButton, Domica
+-	        DomicaButton(self,"yellow")
+-		self.session.open(Domica)
+-                DomicaButton(self,"")
++	def callRestart(self):
++		os.system("/etc/rcS.d/S50emu restart")
++		self.session.open(MessageBox,_("Emu restarting"), MessageBox.TYPE_INFO, timeout=4)
+ 
+ 	def callDomicaBlue(self):
+                 from Plugins.Extensions.Domica.plugin import DomicaButton, Domica
 #--- a/lib/python/Plugins/SystemPlugins/WirelessLan/Wlan.py	2011-02-17 14:15:10.000000000 +0300
 #+++ b/lib/python/Plugins/SystemPlugins/WirelessLan/Wlan.py	2000-01-01 03:15:20.000000000 +0300
 #@@ -470,9 +470,9 @@
