@@ -9,7 +9,7 @@ diff -Nur 2/data/keymap.xml 1/data/keymap.xml
 +# ------------------ Menu Domica Patch ----------------
 +		<key id="KEY_PREVIOUSSONG" mapto="red" flags="m" />
 +		<key id="KEY_BLUE" mapto="green" flags="l" />
-+		<key id="KEY_PLAYPAUSE" mapto="yellow" flags="m" />
++		<key id="KEY_HELP" mapto="yellow" flags="m" />
 +		<key id="KEY_BLUE" mapto="blue" flags="b" />
 +# ------------------ Menu Domica Patch ----------------
 +<key id="KEY_GREEN" mapto="extensions" flags="b" />
