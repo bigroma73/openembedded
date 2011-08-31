@@ -12,6 +12,9 @@ PV="2.7"
 SRC_URI="file://plugin.py \
 	 file://__init__.py \
 	 file://keymap.xml \
+	 file://bitratecalc.a \
+	 file://bitratecalc.la \
+	 file://bitratecalc.so  \
 	 "
 
 S = "${WORKDIR}/secondinfobar"
@@ -20,8 +23,7 @@ addtask movespin after do_unpack before do_patch
 
 do_movespin () {
     mkdir -p  ${S}/usr/lib/enigma2/python/Plugins/Extensions/2IB
-    mv ${WORKDIR}/*.py ${S}/usr/lib/enigma2/python/Plugins/Extensions/2IB
-    mv ${WORKDIR}/*.xml ${S}/usr/lib/enigma2/python/Plugins/Extensions/2IB
+    mv ${WORKDIR}/* ${S}/usr/lib/enigma2/python/Plugins/Extensions/2IB
 }
 
 FILES_${PN} = "/"
