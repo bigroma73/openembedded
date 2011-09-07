@@ -48,7 +48,7 @@ except:
 	GP2test = False
 
 try:
-	from Plugins.Extensions.BitrateViewer.bitratecalc import eBitrateCalculator
+	from bitratecalc import eBitrateCalculator
 	BC = True
 except:
 	BC = False
