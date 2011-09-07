@@ -23,7 +23,9 @@ addtask movespin after do_unpack before do_patch
 
 do_movespin () {
     mkdir -p  ${S}/usr/lib/enigma2/python/Plugins/Extensions/2IB
-    mv ${WORKDIR}/* ${S}/usr/lib/enigma2/python/Plugins/Extensions/2IB
+    mv ${WORKDIR}/*.py ${S}/usr/lib/enigma2/python/Plugins/Extensions/2IB
+    mv ${WORKDIR}/*.xml ${S}/usr/lib/enigma2/python/Plugins/Extensions/2IB
+    mv ${WORKDIR}/bitratecalc.* ${S}/usr/lib/enigma2/python/Plugins/Extensions/2IB
 }
 
 FILES_${PN} = "/"
