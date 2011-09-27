@@ -17,6 +17,15 @@ diff -Nur 2/data/keymap.xml 1/data/keymap.xml
  	</map>
  	
  	<map context="SatlistShortcutAction">
+@@ -566,7 +566,7 @@
+ 	</map>
+ 	
+ 	<map context="HelpActions">
+-		<key id="KEY_HELP" mapto="displayHelp" flags="m" />
++		<key id="KEY_HELP" mapto="displayHelp" flags="l" />
+ 	</map>
+ 
+ 	<map context="ShortcutActions">
 diff -Nur 2/data/menu.xml 1/data/menu.xml
 --- 2/data/menu.xml	2011-04-05 14:15:09.000000000 +0300
 +++ 1/data/menu.xml	2010-12-24 23:01:41.000000000 +0200
