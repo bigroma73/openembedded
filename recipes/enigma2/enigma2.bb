@@ -71,7 +71,7 @@ SRCDATE = "20110823"
 ####################################################
 BRANCH = "experimental"
 PV = "experimental-git${SRCDATE}"
-SRCREV = "610ec8e3c6ed3556ba58f643b89183dd60e95312"
+SRCREV = ""
 ####################################################
 
 SRC_URI = " git://git.opendreambox.org/git/enigma2.git;protocol=git;branch=${BRANCH};tag=${SRCREV}  \
