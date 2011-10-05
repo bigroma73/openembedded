@@ -1,0 +1,28 @@
+diff -Naur 1/timezone.xml 2/timezone.xml
+--- 1/timezone.xml	2009-01-30 14:06:10.000000000 +0200
++++ 2/timezone.xml	2011-10-05 20:34:27.160542745 +0300
+@@ -36,7 +36,8 @@
+ 	<zone name="(GMT+02:00) Athens, Istanbul, Minsk" zone="Istanbul" />
+ 	<zone name="(GMT+02:00) Bucharest" zone="Istanbul" />
+ 	<zone name="(GMT+02:00) Harare, Pretoria" zone="Harare" />
+-	<zone name="(GMT+02:00) Helsinki, Kyiv, Sofia" zone="Istanbul" />
++	<zone name="(GMT+02:00) Helsinki, Sofia" zone="Istanbul" />
++	<zone name="(GMT+02:00) Kyiv" zone="Kiev" />
+ 	<zone name="(GMT+02:00) Riga, Tallinn, Vilnius" zone="Istanbul" />
+ 	<zone name="(GMT+02:00) Jerusalem" zone="Jerusalem" />
+ 	<zone name="(GMT+03:00) Baghdad" zone="Baghdad" />
+@@ -47,11 +48,12 @@
+ 	<zone name="(GMT+04:00) Abu Dhabi, Muscat" zone="Muscat" />
+ 	<zone name="(GMT+04:00) Baku, Tbilisi, Yerevan" zone="Baku" />
+ 	<zone name="(GMT+04:30) Kabul" zone="Kabul" />
+-	<zone name="(GMT+05:00) Ekaterinburg" zone="Omsk" />
++	<zone name="(GMT+05:00) Ekaterinburg" zone="Yekaterinburg" />
+ 	<zone name="(GMT+05:00) Islamabad, Karachi, Tashkent" zone="Tashkent" />
+ 	<zone name="(GMT+05:30) Chennai, Kolkata, Mumbai, New Delhi" zone="Calcutta" />
+ 	<zone name="(GMT+05:45) Kathmandu" zone="Katmandu" />
+-	<zone name="(GMT+06:00) Almaty, Novosibirsk" zone="Almaty" />
++	<zone name="(GMT+06:00) Novosibirsk" zone="Novosibirsk" />
++	<zone name="(GMT+06:00) Almaty" zone="Almaty" />
+ 	<zone name="(GMT+06:00) Astana, Dhaka" zone="Dhaka" />
+ 	<zone name="(GMT+06:00) Sri Jayawardenepura" zone="Colombo" />
+ 	<zone name="(GMT+06:30) Rangoon" zone="Rangoon" />
