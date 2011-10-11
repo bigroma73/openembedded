@@ -8,7 +8,7 @@ SRCREV="15a323fd769d4546bc454bfd81848aa43d655f3d"
 SRCDATE="20110210"
 BRANCH="master"
 PV = "0.10+git${SRCDATE}"
-PR = "r0"
+PR = "r1"
 
 inherit autotools pkgconfig
 

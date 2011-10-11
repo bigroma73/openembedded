@@ -513,7 +513,7 @@ diff -Naur linux-2.6.18/drivers/media/dvb.orig/dvb-core/dvb_frontend.h linux-2.6
  };
  
  #define MAX_EVENT 8
-@@ -138,22 +315,72 @@
+@@ -138,22 +315,75 @@
  	int			  eventr;
  	int			  overflow;
  	wait_queue_head_t	  wait_queue;
@@ -562,6 +562,9 @@ diff -Naur linux-2.6.18/drivers/media/dvb.orig/dvb-core/dvb_frontend.h linux-2.6
 +
 +	/* ISDB-T specifics */
 +	u32			isdbs_ts_id;
++
++	/* DVB-T2 specifics */
++	u32			dvbt2_plp_id;
  };
  
  struct dvb_frontend {

@@ -1,13 +1,13 @@
 DESCRIPTION = "Qt is a versatile cross-platform application framework -- this is the X11 version."
 SECTION = "x11/libs"
 PRIORITY = "optional"
-HOMEPAGE = "http://www.trolltech.com"
-LICENSE = "GPL QPL"
+HOMEPAGE = "https://qt.nokia.com/"
+LICENSE = "LGPLv2.1 GPLv3"
 DEPENDS += "virtual/libx11 fontconfig libxft libxext libxrender libxrandr libxcursor"
 
-INC_PR = "r25"
+INC_PR = "r28"
 
-SRC_URI = "ftp://ftp.trolltech.com/qt/source/qt-x11-opensource-src-${PV}.tar.gz \
+SRC_URI = "http://get.qt.nokia.com/qt/source/qt-x11-opensource-src-${PV}.tar.gz \
            file://0001-cross-compile.patch;patch=1 \
            file://0002-fix-resinit-declaration.patch;patch=1 \
            file://0003-no-tools.patch;patch=1 \

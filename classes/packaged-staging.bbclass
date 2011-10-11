@@ -382,7 +382,6 @@ python do_package_stage () {
                 if os.path.exists(srcfile):
                     destpath = ipkpath + "/" + arch + "/"
                     bb.mkdirhier(destpath)
-		    print destpath
                     bb.copyfile(srcfile, destpath + srcname)
 
             if bb.data.inherits_class('package_deb', d):

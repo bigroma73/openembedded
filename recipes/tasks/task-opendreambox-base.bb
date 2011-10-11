@@ -1,7 +1,7 @@
 DESCRIPTION = "OpenDreambox: Base Task for the OpenDreambox Distribution"
 SECTION = "opendreambox/base"
 LICENSE = "MIT"
-PR = "r6"
+PR = "r7"
 
 inherit task
 
@@ -46,6 +46,7 @@ OPENDREAMBOX_BASE_OPTIONAL_RECOMMENDS = "\
   ppp \
   smartmontools \
   avahi-daemon \
+  kernel-module-usbhid \
 "
 
 RDEPENDS_${PN} = "\

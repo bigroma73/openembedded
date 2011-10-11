@@ -90,3 +90,54 @@ diff --git a/linux/include/linux/dvb/version.h b/linux/include/linux/dvb/version
 +#define DVB_API_VERSION_MINOR 3
  
  #endif /*_DVBVERSION_H_*/
+--- v4l-dvb-org/linux/drivers/media/dvb/dvb-core/dvb_frontend.c	2011-08-13 18:16:51.000000000 +0200
++++ v4l-dvb/linux/drivers/media/dvb/dvb-core/dvb_frontend.c	2011-08-13 18:21:12.953703247 +0200
+@@ -917,7 +917,7 @@
+ 	.buffer = b \
+ }
+ 
+-static struct dtv_cmds_h dtv_cmds[] = {
++static struct dtv_cmds_h dtv_cmds[DTV_MAX_COMMAND + 1] = {
+ 	_DTV_CMD(DTV_TUNE, 1, 0),
+ 	_DTV_CMD(DTV_CLEAR, 1, 0),
+ 
+@@ -979,6 +979,7 @@
+ 	_DTV_CMD(DTV_ISDBT_LAYERC_TIME_INTERLEAVING, 0, 0),
+ 
+ 	_DTV_CMD(DTV_ISDBS_TS_ID, 1, 0),
++	_DTV_CMD(DTV_DVBT2_PLP_ID, 1, 0),
+ 
+ 	/* Get */
+ 	_DTV_CMD(DTV_DISEQC_SLAVE_REPLY, 0, 1),
+@@ -1334,6 +1335,9 @@
+ 	case DTV_ISDBS_TS_ID:
+ 		tvp->u.data = c->isdbs_ts_id;
+ 		break;
++	case DTV_DVBT2_PLP_ID:
++		tvp->u.data = fe->dtv_property_cache.dvbt2_plp_id;
++		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -1498,6 +1502,9 @@
+ 	case DTV_ISDBS_TS_ID:
+ 		c->isdbs_ts_id = tvp->u.data;
+ 		break;
++	case DTV_DVBT2_PLP_ID:
++		fe->dtv_property_cache.dvbt2_plp_id = tvp->u.data;
++		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
+--- v4l-dvb-org/linux/drivers/media/dvb/dvb-core/dvb_frontend.h	2011-04-13 01:43:27.000000000 +0200
++++ v4l-dvb/linux/drivers/media/dvb/dvb-core/dvb_frontend.h	2011-08-13 18:21:12.973703248 +0200
+@@ -359,6 +359,9 @@
+ 
+ 	/* ISDB-T specifics */
+ 	u32			isdbs_ts_id;
++
++	/* DVB-T2 specifics */
++	u32                     dvbt2_plp_id;
+ };
+ 
+ struct dvb_frontend {

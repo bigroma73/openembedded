@@ -779,7 +779,7 @@ def oe_unpack_file(file, data, url = None):
 	if not url:
 		url = "file://%s" % file
 	dots = file.split(".")
-	if dots[-1] in ['gz', 'bz2', 'Z']:
+	if dots[-1] in ['gz', 'bz2', 'Z', 'xz', 'lz']:
 		efile = os.path.join(bb.data.getVar('WORKDIR', data, 1),os.path.basename('.'.join(dots[0:-1])))
 	else:
 		efile = file
@@ -794,6 +794,14 @@ def oe_unpack_file(file, data, url = None):
 		cmd = 'gzip -dc %s > %s' % (file, efile)
 	elif file.endswith('.bz2'):
 		cmd = 'bzip2 -dc %s > %s' % (file, efile)
+	elif file.endswith('.tar.xz'):
+		cmd = 'xz -dc %s | tar x --no-same-owner -f -' % file
+	elif file.endswith('.xz'):
+		cmd = 'xz -dc %s > %s' % (file, efile)
+	elif file.endswith('.tar.lz'):
+		cmd = 'lzip -dc %s | tar x --no-same-owner -f -' % file
+	elif file.endswith('.lz'):
+		cmd = 'lzip -dc %s > %s' % (file, efile)
 	elif file.endswith('.zip') or file.endswith('.jar'):
 		cmd = 'unzip -q -o'
 		(type, host, path, user, pswd, parm) = bb.decodeurl(url)

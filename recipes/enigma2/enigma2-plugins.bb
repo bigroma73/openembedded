@@ -4,8 +4,9 @@ MAINTAINER = "Felix Domke <tmbinc@elitedvb.net>"
 PACKAGES_DYNAMIC = "enigma2-plugin-*"
 
 # if you want experimental, use:
+#SRCREV="87fd2f1120962f553ecb1a88bbee46ed821df975"
 SRCREV=""
-SRCDATE="20110823"
+SRCDATE="20110215"
 BRANCH="master"
 PV = "experimental-git${SRCDATE}"
 
@@ -29,7 +30,7 @@ inherit autotools
 
 S = "${WORKDIR}/git"
 
-DEPENDS = "python-pyopenssl python-gdata streamripper python-mutagen python-daap"
+DEPENDS = "python-pyopenssl python-gdata streamripper python-mutagen python-daap python-flickrapi python-transmissionrpc"
 DEPENDS += "enigma2"
 
 python populate_packages_prepend () {

@@ -175,7 +175,7 @@ diff -Naur linux-2.6.18/include/linux/dvb.orig/frontend.h linux-2.6.18/include/l
  } fe_guard_interval_t;
  
  
-@@ -239,6 +257,137 @@
+@@ -239,6 +257,138 @@
  	struct dvb_frontend_parameters parameters;
  };
  
@@ -271,6 +271,7 @@ diff -Naur linux-2.6.18/include/linux/dvb.orig/frontend.h linux-2.6.18/include/l
 +	SYS_CMMB,
 +	SYS_DAB,
 +	SYS_DVBT2,
++	SYS_TURBO,
 +} fe_delivery_system_t;
 +
 +struct dtv_cmds_h {
@@ -334,7 +335,7 @@ diff -Naur linux-2.6.18/include/linux/dvb.orig/version.h linux-2.6.18/include/li
 -#define DVB_API_VERSION 3
 -#define DVB_API_VERSION_MINOR 1
 +#define DVB_API_VERSION 5
-+#define DVB_API_VERSION_MINOR 3
++#define DVB_API_VERSION_MINOR 4
  
  #endif /*_DVBVERSION_H_*/
 diff -Naur linux-2.6.18/include/linux/dvb.orig/video.h linux-2.6.18/include/linux/dvb/video.h

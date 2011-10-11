@@ -1,17 +1,17 @@
 SUMMARY = "Qt is a versatile cross-platform application framework -- this is the embedded version."
 SECTION = "libs"
-LICENSE = "GPL QPL"
+LICENSE = "LGPLv2.1 GPLv3"
 PRIORITY = "optional"
-HOMEPAGE = "http://www.trolltech.com"
+HOMEPAGE = "https://qt.nokia.com/"
 DEPENDS += "directfb tslib"
-INC_PR = "r29"
+INC_PR = "r33"
 
 QT_BASE_NAME ?= "qt4-embedded"
 QT_BASE_LIB  ?= "libqt-embedded"
 QT_DIR_NAME = "qtopia"
 QT_LIBINFIX = "E"
 
-SRC_URI = "ftp://ftp.trolltech.com/qt/source/qt-embedded-linux-opensource-src-${PV}.tar.bz2 \
+SRC_URI = "http://get.qt.nokia.com/qt/source/qt-embedded-linux-opensource-src-${PV}.tar.bz2 \
            file://0001-cross-compile.patch;patch=1 \
            file://0002-fix-resinit-declaration.patch;patch=1 \
            file://0003-no-tools.patch;patch=1 \
