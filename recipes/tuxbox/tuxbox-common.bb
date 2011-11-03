@@ -3,7 +3,7 @@ LICENSE = "GPL"
 MAINTAINER = "Felix Domke <tmbinc@elitdvb.net>"
 
 PN = "tuxbox-common"
-PR = "r1"
+PR = "r2"
 SRCDATE = "20090305"
 PV = "0.0+cvs${SRCDATE}"
 
