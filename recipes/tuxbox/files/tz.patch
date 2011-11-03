@@ -7,7 +7,7 @@ diff -Naur 1/timezone.xml 2/timezone.xml
  	<zone name="(GMT+02:00) Harare, Pretoria" zone="Harare" />
 -	<zone name="(GMT+02:00) Helsinki, Kyiv, Sofia" zone="Istanbul" />
 +	<zone name="(GMT+02:00) Helsinki, Sofia" zone="Istanbul" />
-+	<zone name="(GMT+02:00) Kyiv" zone="Kiev" />
++	<zone name="(GMT+02:00) Kyiv" zone="Istanbul" />
  	<zone name="(GMT+02:00) Riga, Tallinn, Vilnius" zone="Istanbul" />
  	<zone name="(GMT+02:00) Jerusalem" zone="Jerusalem" />
  	<zone name="(GMT+03:00) Baghdad" zone="Baghdad" />
