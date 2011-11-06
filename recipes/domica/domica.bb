@@ -3,7 +3,7 @@ SECTION = "base"
 PRIORITY = "optional"
 LICENSE = "GPL"
 MAINTAINER = "Pashaa <caplu@yandex.ru>"
-DEPENDS = "ntp enigma2"
+DEPENDS = "ntp enigma2 nfs-utils bash nano ctorrent openvpn djmount ntfs-3g lsof ushare"
 RDEPENDS = "enigma2"
 
 PR = "r12"
