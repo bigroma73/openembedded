@@ -6,7 +6,7 @@ MAINTAINER = "Pashaa <caplu@yandex.ru>"
 DEPENDS = "ntp enigma2 nfs-utils bash nano ctorrent openvpn djmount ntfs-3g lsof ushare"
 RDEPENDS = "enigma2"
 
-PR = "r12"
+PR = "r13"
 SRCREV="${AUTOREV}"
 
 SRC_URI="git://github.com/bigroma73/domica-files.git;protocol=git;branch=master" 
